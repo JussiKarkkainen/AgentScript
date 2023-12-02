@@ -1,5 +1,5 @@
 from core.environment import Environment
-from configs.config import CarRacingConfig
+from configs.config import TestCarRacingConfig
 
 def test_environment():
     env = Environment(CarRacingConfig)

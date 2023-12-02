@@ -9,8 +9,8 @@ class Environment:
         
 
     def create_perception_dataset(self):
-        raise Exception("create_perception_dataset()")
         frames = 0
+        raise Exception("create perception dataset()")
         for episode in range(self.config["num_episodes"]):
             obs, info = self.env.reset()
             observations = []
@@ -26,12 +26,12 @@ class Environment:
             frames += frame + 1
             observations_np = np.array(observations, dtype=np.uint8)
             actions_np = np.array(actions, dtype=np.float16)
-            np.savez_compressed(self.config["perception"]["data_path"], obs=observations_np, action=actions_np)
+            np.savez_compressed(self.config["meta"]["dataset_path"]+f"/episode{episode}", obs=observations_np, action=actions_np)
 
 
     def create_datasets(self):
-        # perception_dataset_path = self.create_perception_dataset() 
-        dataset_paths = {"perception": f"{self.config['meta']['dataset_path']}+'/vision.npz'"}
+        perception_dataset_path = self.create_perception_dataset() 
+        dataset_paths = {"perception": f"{self.config['meta']['dataset_path']}"}
         return dataset_paths
     
     def make_env(self):

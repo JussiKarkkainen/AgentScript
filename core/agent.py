@@ -15,7 +15,7 @@ def no_terminate():
 class Agent:
     def __init__(self, config):
         self.config = config
-        self.environment = Environment(config["data_config"])
+        self.environment = Environment(config)
         self.worldmodel = WorldModel(config["world_model"])
         self.initial_state = self.worldmodel.initial_state()
         self.perception = Perception(config["perception"])
