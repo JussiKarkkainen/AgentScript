@@ -1,5 +1,6 @@
 tinygrad
 gymnasium
+gymnasium[box2d]
 numpy
 coverage
 pytest

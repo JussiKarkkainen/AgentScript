@@ -2,8 +2,15 @@ from typing import Dict
 import gymnasium as gym
 import numpy as np
 import os
+import cv2
 
 implemented_envs = {"gym": ["CarRacing-v2"]}
+
+def preprocess(observation: np.ndarray) -> np.ndarray:
+    # TODO: Where should preprocessing be done?
+    # TODO: Remove hardcoding from preprocessing
+    resized = cv2.resize(observation, (64, 64), interpolation=cv2.INTER_AREA)
+    return resized
 
 class Environment:
     def __init__(self, config):
@@ -16,12 +23,17 @@ class Environment:
         episodes on the specified environment. Returns the directory path of the dataset files. Dataset is saved 
         as a numpy array and stored using np.savez_compressed
         """
+        
+        if not os.getenv("DATASET"):
+            return self.config["meta"]["dataset_path"]+"vision/"
+
         frames = 0
         for episode in range(self.config["data_config"]["num_episodes"]):
             obs, info = self.env.reset()
             observations = []
             actions = []
             for frame in range(self.config["data_config"]["max_frames"]):
+                obs = preprocess(obs)
                 observations.append(obs)
                 action = self.env.action_space.sample()
                 actions.append(action)
@@ -38,9 +50,8 @@ class Environment:
 
 
     def create_datasets(self) -> Dict[str, str]:
-        if os.getenv("DATASET"):
-            perception_dataset_path = self.create_perception_dataset() 
-        dataset_paths = {"perception": f"{self.config['meta']['dataset_path']}"}
+        perception_dataset_path = self.create_perception_dataset() 
+        dataset_paths = {"vision": perception_dataset_path}
         return dataset_paths
     
     def make_env(self):

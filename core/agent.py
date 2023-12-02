@@ -1,3 +1,4 @@
+from typing import Dict, Any
 from core.environment import Environment
 from core.perception import Perception
 from core.world_model import WorldModel
@@ -13,12 +14,12 @@ def no_terminate():
     return True
 
 class Agent:
-    def __init__(self, config):
+    def __init__(self, config: Dict[str, Dict[str, Any]]):
         self.config = config
         self.environment = Environment(config)
         self.worldmodel = WorldModel(config["world_model"])
         self.initial_state = self.worldmodel.initial_state()
-        self.perception = Perception(config["perception"])
+        self.perception = Perception(config)
         #self.cost = Cost()
         self.actor = Actor(config["actor"])
         #self.short_term_memory = ShortTermMemory()
@@ -44,7 +45,6 @@ class Agent:
     def train(self):
         if self.config["meta"]["make_dataset"]:
             datasets = self.environment.create_datasets()
-        raise Exception
         self.perception.train(datasets["vision"])
         self.world_model.train(datasets["world_model"])
         self.actor.train()

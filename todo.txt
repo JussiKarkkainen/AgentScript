@@ -1,0 +1,3 @@
+/Users/jussikarkkainen/AI/AgentLib/core/agent.py:         # TODO: This is a test todo
+/Users/jussikarkkainen/AI/AgentLib/core/perception.py:     # TODO: The input resolution is hardcoded for CarRacing example, fix this
+/Users/jussikarkkainen/AI/AgentLib/datasets/replay_buffer.py: # TODO: This is a hack that needs to be rewritten
