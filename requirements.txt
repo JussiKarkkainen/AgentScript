@@ -1,0 +1,5 @@
+tinygrad
+gymnasium
+numpy
+coverage
+pytest
