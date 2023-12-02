@@ -30,7 +30,9 @@ class Environment:
 
 
     def create_datasets(self):
-        self.create_perception_dataset() 
+        # perception_dataset_path = self.create_perception_dataset() 
+        dataset_paths = {"perception": "self.config['meta']['dataset_path']+'/vision.npz'"}
+        return dataset_paths
     
     def make_env(self):
         if self.config["env"] not in implemented_envs:
