@@ -15,5 +15,8 @@ class Perception:
 
     def decode(self, z):
         return self.model.decode(z)
+
+    def train(self):
+        pass
     
 

@@ -5,20 +5,27 @@ CarRacingConfig = {
                 "enc_kernel_size": 4,
                 "dec_kernel_size": 5,
                 "text": None,
-                "audio": None
+                "audio": None,
             },
             "world_model": {
                 "input_shape": 32,
-                "hidden_size": 256
+                "hidden_size": 256,
             },
             "actor": {
                 "input_size": 64,
                 "action_space": "discrete",
-                "actions": 5
-            }
+                "actions": 5,
+            },
             "data_config": {
                 "num_episodes": 10000,
+                "max_frames": 100,          # Maximum frames/episode
                 "env": "CarRacing-V2",
                 "policy": "random"
+            },
+            "meta": {
+                "train": True,
+                "make_dataset": True,
+                "weights_path": "weights/",
+                "dataset_path": "datasets/"
             }
 }

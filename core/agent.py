@@ -1,11 +1,21 @@
+from core.environment import Environment
 from core.perception import Perception
 from core.world_model import WorldModel
 from tinygrad.tensor import Tensor
 from core.actor import Actor
 
+
+def no_terminate():
+    """
+    Checks if the current agent & eenvironment should terminate.
+    Checks for: User input, terminal failure
+    """
+    return True
+
 class Agent:
     def __init__(self, config):
         self.config = config
+        self.environment = Environment(config["data_config"])
         self.worldmodel = WorldModel(config["world_model"])
         self.initial_state = self.worldmodel.initial_state()
         self.perception = Perception(config["perception"])
@@ -13,11 +23,6 @@ class Agent:
         self.actor = Actor(config["actor"])
         #self.short_term_memory = ShortTermMemory()
         
-        #self.world_model.train()
-        #self.perception.train()
-        #self.cost.train()
-        #self.actor.train()
-        #self.short_term_memory.init()
 
     def perceive(self, observation):
         z = self.perception.encode(observation)
@@ -35,3 +40,21 @@ class Agent:
         x_hat = self.perception.decode(z)
         print(x_hat.shape)
         raise Exception  
+    
+    def train(self):
+        if self.config["meta"]["make_dataset"]:
+            datasets = self.environment.create_datasets()
+        self.perception.train(datasets["vision"])
+        self.world_model.train(datasets["world_model"])
+        self.actor.train()
+        self.cost.train()
+    
+    def load_weights(self):
+        pass
+
+    def execute(self):
+        if self.config["meta"]["train"]:
+            self.train()
+        else:
+            self.load_weights()
+
