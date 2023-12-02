@@ -19,7 +19,7 @@ class ReplayBuffer:
         if self.env_config not in implemented_envs:
             raise NotImplementedError("The Environment you are using is not yet supported")
         self.env = gym.make(self.env_config, render_mode="rgb_array")
-
+    '''
     def collect_epochs(self):
         for i in range(self.num_episodes):
             observation, info = self.env.reset() 
@@ -29,3 +29,4 @@ class ReplayBuffer:
             
                 if terminated or truncated:
                     observation, info = env.reset()
+    '''

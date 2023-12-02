@@ -26,12 +26,12 @@ class Environment:
             frames += frame + 1
             observations_np = np.array(observations, dtype=np.uint8)
             actions_np = np.array(actions, dtype=np.float16)
-            np.savez_compressed(config["perception"]["data_path"], obs=observations_np, action=actions_np)
+            np.savez_compressed(self.config["perception"]["data_path"], obs=observations_np, action=actions_np)
 
 
     def create_datasets(self):
         # perception_dataset_path = self.create_perception_dataset() 
-        dataset_paths = {"perception": "self.config['meta']['dataset_path']+'/vision.npz'"}
+        dataset_paths = {"perception": f"{self.config['meta']['dataset_path']}+'/vision.npz'"}
         return dataset_paths
     
     def make_env(self):
