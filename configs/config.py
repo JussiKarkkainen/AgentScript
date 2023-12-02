@@ -27,6 +27,9 @@ CarRacingConfig = {
                 "make_dataset": True,
                 "weights_path": "weights/",
                 "dataset_path": "datasets/"
+            },
+            "train": {
+                "num_epochs": 10
             }
 }
 

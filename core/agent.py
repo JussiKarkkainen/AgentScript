@@ -6,7 +6,7 @@ from tinygrad.tensor import Tensor
 from core.actor import Actor
 
 
-def no_terminate():
+def no_terminate() -> bool:
     """
     Checks if the current agent & eenvironment should terminate.
     Checks for: User input, terminal failure

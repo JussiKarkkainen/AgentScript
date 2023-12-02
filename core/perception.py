@@ -27,17 +27,14 @@ class Perception:
         self.config = config
         self.model = SimpleVarAutoEnc(config["perception"]) 
 
-    def preprocess(self):
-        pass
-
-    def encode(self, x):
-        return self.model.encode(x)
-
-    def decode(self, z):
-        return self.model.decode(z)
-
     def train(self, train_dataset_path: str):
         data = load_dataset(train_dataset_path, self.config["data_config"]["num_episodes"], self.config["data_config"]["max_frames"])
-        print(data.shape)
+        num_batches = data[0]
+        for epoch in range(self.config["train"]["num_epochs"]):
+            np.random.shuffle(data)
+            for batch in data:
+                obs = batch.astype(np.float) / 255.0
+                train_loss, r_loss, kl_loss = self.model(obs)
+                
     
 
