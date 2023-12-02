@@ -19,7 +19,7 @@ CarRacingConfig = {
             "data_config": {
                 "num_episodes": 10000,
                 "max_frames": 1000,          # Maximum frames/episode
-                "env": "CarRacing-V2",
+                "env": "CarRacing-v2",
                 "policy": "random"
             },
             "meta": {
@@ -51,7 +51,7 @@ TestCarRacingConfig = {
             "data_config": {
                 "num_episodes": 5,
                 "max_frames": 10,          # Maximum frames/episode
-                "env": "CarRacing-V2",
+                "env": "CarRacing-v2",
                 "policy": "random"
             },
             "meta": {

@@ -44,6 +44,7 @@ class Agent:
     def train(self):
         if self.config["meta"]["make_dataset"]:
             datasets = self.environment.create_datasets()
+        raise Exception
         self.perception.train(datasets["vision"])
         self.world_model.train(datasets["world_model"])
         self.actor.train()
