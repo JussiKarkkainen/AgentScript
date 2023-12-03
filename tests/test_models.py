@@ -9,7 +9,6 @@ def test_vae_input_shape():
     z, mu, sigma = vae.encode(sample_input)
     assert z.shape == (1, 32)
 
-
 def test_vae_output_shape():
     vae = models.SimpleVarAutoEnc(TestCarRacingConfig["perception"])
     z = Tensor.randn(1, 32)

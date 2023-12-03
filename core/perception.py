@@ -55,6 +55,9 @@ class Perception:
                     loss.backward()
                     self.optimizer.step()
 
+    def inference(self, obs):
+        pass
+
                 
     
 
