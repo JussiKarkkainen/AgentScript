@@ -27,7 +27,7 @@ class SimpleConvEnc:
         mu = self.mu(x)
         sigma = (self.sigma(x) * 0.5).exp()
         z = mu + sigma * Tensor.randn(1, 32)
-        return z
+        return z, mu, sigma
 
 class SimpleConvDec:
     def __init__(self, hidden_dim, kernel_size=5):
@@ -52,10 +52,12 @@ class SimpleVarAutoEnc:
     def __init__(self, config):
         self.encoder = SimpleConvEnc(config["vision_resolution"], config["hidden_dim"], config["enc_kernel_size"])
         self.decoder = SimpleConvDec(config["hidden_dim"], config["dec_kernel_size"])
-
+    
     def encode(self, x):
         return self.encoder(x)
 
     def decode(self, z):
         return self.decoder(z)
 
+    def __call__(self, x):
+        return self.decode(self.encode(x)[0])

@@ -1,6 +1,7 @@
 from tinygrad.tensor import Tensor
 import tinygrad.nn as nn
 from core.nn_models import SimpleVarAutoEnc
+from logging.wandb_logs import WandbLogger
 import numpy as np
 import os
 
@@ -26,15 +27,34 @@ class Perception:
     def __init__(self, config):
         self.config = config
         self.model = SimpleVarAutoEnc(config["perception"]) 
+        self.optimizer = nn.optim.Adam(nn.state.get_parameters(self.model), lr=3e-4)
+
+    def loss_fn(self, x, y_hat, mean, log_var):
+        l2_loss = ((y_hat - x) ** 2).mean()
+        kl_loss = -0.5 * (1 + log_var - mean.pow(2) - log_var.exp()).sum()
+        return l2_loss, kl_loss, l2_loss + kl_loss
+
+    def load_pretrained(self):
+        pass
+
 
     def train(self, train_dataset_path: str):
         data = load_dataset(train_dataset_path, self.config["data_config"]["num_episodes"], self.config["data_config"]["max_frames"])
         num_batches = data[0]
-        for epoch in range(self.config["train"]["num_epochs"]):
-            np.random.shuffle(data)
-            for batch in data:
-                obs = batch.astype(np.float) / 255.0
-                train_loss, r_loss, kl_loss = self.model(obs)
+        self.model.train()
+        with WandbLogger(project_name="Perception Module", lr=self.config.lr, epochs=config.num_epochs) as logger:
+            for epoch in range(self.config["train"]["num_epochs"]):
+                np.random.shuffle(data)
+                for batch in data:
+                    self.optimizer.zero_grad()
+                    obs = batch.astype(np.float) / 255.0
+                    z, mu, sigma = self.model.encode(obs)
+                    y_hat = self.model.decode(z)
+                    l2_loss, kl_loss, loss = self.loss_fn(obs, y_hat, mu, sigma)
+                    wandb.log({"L2 Loss": l2_loss, "KL Divergence": kl_loss, "VAE Loss": loss})
+                    loss.backward()
+                    self.optimizer.step()
+
                 
     
 
