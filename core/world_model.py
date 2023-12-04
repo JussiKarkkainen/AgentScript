@@ -1,11 +1,11 @@
 from tinygrad.tensor import Tensor
 import tinygrad.nn as nn
-from models.rnnt import LSTM
-
+from core.nn_models import MDNLSTM
 
 class WorldModel:
     def __init__(self, config):
         self.config = config
+        self.model = MDNLSTM() 
         #self.lstm = LSTMCell(config["input_shape"], config["hidden_size"], 0.1)
         self.lstm = None 
 

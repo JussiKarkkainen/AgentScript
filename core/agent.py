@@ -48,7 +48,7 @@ class Agent:
         self.perception.train(datasets["vision"])
         self.world_model.train(datasets["world_model"])
         self.actor.train()
-        self.cost.train()
+        #self.cost.train()
     
     def load_weights(self):
         pass

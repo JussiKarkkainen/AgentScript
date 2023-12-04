@@ -1,5 +1,5 @@
 import core.nn_models as models
-from configs.config import TestCarRacingConfig
+from configs.carracingtest import TestCarRacingConfig
 import numpy as np
 from tinygrad.tensor import Tensor
 

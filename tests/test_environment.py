@@ -1,5 +1,5 @@
 from core.environment import Environment
-from configs.config import TestCarRacingConfig
+from configs.carracingtest import TestCarRacingConfig
 import os
 
 def test_create_datasets():

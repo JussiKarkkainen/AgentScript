@@ -1,6 +1,7 @@
 from tinygrad.tensor import Tensor
 import tinygrad.nn as nn
 
+#################### VAE ####################
 # A Convolutional net used for Gymnasium environments like Car-Racing
 # Taken from https://arxiv.org/pdf/1803.10122.pdf
 class SimpleConvEnc:
@@ -61,3 +62,29 @@ class SimpleVarAutoEnc:
 
     def __call__(self, x):
         return self.decode(self.encode(x)[0])
+
+
+#################### MLP ####################
+class MLP:
+    def __init__(self, config):
+        self.layers = []
+        for i in range(config["num_mlp_layers"]):
+            self.layers.append(nn.Linear(config["mlp_input_dim"], config["mlp_hidden_dim"]))
+        self.layers.append(nn.Linear(config["mlp_hidden_dim"], config["mlp_output_dim"]))
+
+    def __call__(self, x):
+        for layer in self.layers[:-1]:
+            x = layer(x).relu()
+        x = layers[-1].softmax()
+        return x 
+
+
+
+#################### MDNLSTM ####################
+class MDNLSTM:
+    def __init__(self, config):
+        self.lstm = LSTM()
+        self.mdn = MDN()
+
+    def __call__(self, x):
+        pass
