@@ -1,3 +1,45 @@
-/Users/jussikarkkainen/AI/AgentLib/core/agent.py:         # TODO: This is a test todo
-/Users/jussikarkkainen/AI/AgentLib/core/perception.py:     # TODO: The input resolution is hardcoded for CarRacing example, fix this
-/Users/jussikarkkainen/AI/AgentLib/datasets/replay_buffer.py: # TODO: This is a hack that needs to be rewritten
+============================================================
+File: nn_models.py, Line: 92
+class LSTMCell:
+    def __init__(self, input_size, hidden_size):
+        # TODO: These weights can be unified, which requires fewer matmuls, find out how it's equivelant to this
+        weights = lambda: (Tensor.uniform(input_size, hidden_size),
+                           Tensor.uniform(hidden_size, hidden_size),
+============================================================
+
+============================================================
+File: environment.py, Line: 10
+
+def preprocess(observation: np.ndarray) -> np.ndarray:
+    # TODO: Where should preprocessing be done?
+    # TODO: Remove hardcoding from preprocessing
+    resized = cv2.resize(observation, (64, 64), interpolation=cv2.INTER_AREA)
+============================================================
+
+============================================================
+File: environment.py, Line: 11
+def preprocess(observation: np.ndarray) -> np.ndarray:
+    # TODO: Where should preprocessing be done?
+    # TODO: Remove hardcoding from preprocessing
+    resized = cv2.resize(observation, (64, 64), interpolation=cv2.INTER_AREA)
+    return resized
+============================================================
+
+============================================================
+File: perception.py, Line: 9
+
+def load_dataset(path: str, num_episodes: int, num_frames: int) -> np.array:
+    # TODO: The input resolution is hardcoded for CarRacing example, fix this
+    data = np.zeros((num_episodes, num_frames, 64, 64, 3), dtype=np.uint8)
+    files = [os.path.join(os.getcwd()+"/tests/datasets/vision", file) for file in os.listdir(path)]
+============================================================
+
+============================================================
+File: replay_buffer.py, Line: 4
+from collections import namedtuple
+
+# TODO: This is a hack that needs to be rewritten
+implemented_envs = ["CarRacing-V2"]
+
+============================================================
+
