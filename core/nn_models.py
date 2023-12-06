@@ -88,18 +88,31 @@ class MDNLSTM:
         pass
 
 class LSTMCell:
-    def __init__(self, config, input_size, hidden_size):
-        self.weights_ih = Tensor.uniform(hidden_size * 4, input_size)
-        self.bias_ih = Tensor.uniform(hidden_size * 4)
-        self.weights_hh = Tensor.uniform(hidden_size * 4, hidden_size)
-        self.bias_hh = Tensor.uniform(hidden_size * 4)
+    def __init__(self, input_size, hidden_size):
+        # TODO: These weights can be unified, which requires fewer matmuls, find out how it's equivelant to this
+        weights = lambda: (Tensor.uniform(input_size, hidden_size),
+                           Tensor.uniform(hidden_size, hidden_size),
+                           Tensor.zeros(hidden_size))
+        self.W_xi, self.W_hi, self.b_i = weights() 
+        self.W_xf, self.W_hf, self.b_f = weights() 
+        self.W_xo, self.W_ho, self.b_o = weights() 
+        self.W_xc, self.W_hc, self.b_c = weights() 
 
-    def __call__(self, x, h):
-        pass 
+    def __call__(self, x, hc):
+        H, C = hc
+        i = (x.matmul(self.W_xi) + H.matmul(self.W_hi) + self.b_i).sigmoid()
+        f = (x.matmul(self.W_xf) + H.matmul(self.W_hf) + self.b_f).sigmoid()
+        o = (x.matmul(self.W_xo) + H.matmul(self.W_ho) + self.b_o).sigmoid()
+        c = (x.matmul(self.W_xc) + H.matmul(self.W_hc) + self.b_c).tanh()
+
+        C = f * C + i * c
+        H = o * C.tanh()
+        return o, (H, C)
 
 class LSTM:
     def __init__(self, config):
         self.config = config
+        self.cells = [LSTMCell(config["input_size"], config["hidden_size"] for cell in range(config["num_cells"]]
 
     def __call__(self, x, h):
         pass

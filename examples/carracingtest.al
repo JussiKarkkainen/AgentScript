@@ -14,7 +14,8 @@
     },
     "world_model": {
         "input_shape": 32,
-        "hidden_size": 256
+        "hidden_size": 256,
+        "num_cells": 1
     },
     "actor": {
         "input_size": 64,
