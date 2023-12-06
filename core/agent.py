@@ -18,19 +18,10 @@ class Agent:
         self.config = config
         self.environment = Environment(config)
         self.worldmodel = WorldModel(config["world_model"])
-        self.initial_state = self.worldmodel.initial_state()
         self.perception = Perception(config)
         #self.cost = Cost()
         self.actor = Actor(config["actor"])
         #self.short_term_memory = ShortTermMemory()
-        
-
-    def perceive(self, observation):
-        z = self.perception.encode(observation)
-        return z
-    
-    def world_model(self, z):
-        pass
 
     def act(self, observation):
         observation = Tensor(observation)
@@ -46,16 +37,35 @@ class Agent:
         if self.config["meta"]["make_dataset"]:
             datasets = self.environment.create_datasets()
         self.perception.train(datasets["vision"])
-        self.world_model.train(datasets["world_model"])
+        self.worldmodel.train(datasets["world_model"])
         self.actor.train()
         #self.cost.train()
     
     def load_weights(self):
         pass
 
+    def act(self, obs, wm_state):
+        latent = self.perception.inference(obs)
+        pred, wm_state = self.worldmodel.predict(latent, wm_state)
+        raise Exception("single world model step")
+        action = self.actor(latent, pred)
+        return action, wm_state
+
     def execute(self):
+        '''
+        ----------- For testing inference -----------
         if self.config["meta"]["train"]:
             self.train()
-        else:
-            self.load_weights()
+        self.load_weights()
+        '''
+        obs = self.environment.init()
+        wm_state = self.worldmodel.initial_state()
+        terminate = None
+        while no_terminate() and not terminate:
+            action, wm_state = self.act(obs, wm_state)
+            raise Exception("single inference step")
+            obs, reward, terminate = self.environment.step(action)
+        
+        self.environment.shutdown()
+        exit()
 

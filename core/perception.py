@@ -1,7 +1,7 @@
 from tinygrad.tensor import Tensor
 import tinygrad.nn as nn
 from core.nn_models import SimpleVarAutoEnc
-from logging.wandb_logs import WandbLogger
+from logs.wandb_logs import WandbLogger
 import numpy as np
 import os
 
@@ -37,12 +37,11 @@ class Perception:
     def load_pretrained(self):
         pass
 
-
     def train(self, train_dataset_path: str):
         data = load_dataset(train_dataset_path, self.config["data_config"]["num_episodes"], self.config["data_config"]["max_frames"])
         num_batches = data[0]
         self.model.train()
-        with WandbLogger(project_name="Perception Module", lr=self.config.lr, epochs=config.num_epochs) as logger:
+        with WandbLogger(project_name="Perception Module", lr=self.config.lr, epochs=config.num_epochs) as wblogs:
             for epoch in range(self.config["train"]["num_epochs"]):
                 np.random.shuffle(data)
                 for batch in data:
@@ -56,7 +55,10 @@ class Perception:
                     self.optimizer.step()
 
     def inference(self, obs):
-        pass
+        # Numpy to tinygrad -> include batch dim -> swap channel dim
+        obs = Tensor(obs).unsqueeze(dim=0).transpose(1, 3)
+        latent, _, _ = self.model.encode(obs)
+        return latent
 
                 
     

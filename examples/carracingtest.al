@@ -19,7 +19,11 @@
     "actor": {
         "input_size": 64,
         "action_space": "discrete",
-        "actions": 5
+        "actions": 5,
+        "num_mlp_layers": 1,
+        "mlp_input_dim": 64,
+        "mlp_hidden_dim": 40,
+        "mlp_output_dim": 5
     },
     "data_config": {
         "num_episodes": 5,

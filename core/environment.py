@@ -58,3 +58,8 @@ class Environment:
         if self.config["data_config"]["env"] not in implemented_envs["gym"]:
             raise NotImplementedError("The Environment you are using is not yet supported")
         self.env = gym.make(self.config["data_config"]["env"], render_mode="rgb_array")
+
+    def init(self):
+        obs, info = self.env.reset()
+        obs = preprocess(obs)
+        return obs

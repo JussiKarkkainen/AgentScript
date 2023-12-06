@@ -9,6 +9,6 @@ if __name__ == "__main__":
     with open(config_file, "r") as f:
         contents = f.read() 
         config = json_config_parser(contents)
-
+    
     agent = Agent(config)
     agent.execute()

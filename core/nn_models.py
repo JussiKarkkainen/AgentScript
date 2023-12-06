@@ -1,5 +1,6 @@
 from tinygrad.tensor import Tensor
 import tinygrad.nn as nn
+from tinygrad.nn import optim, state
 
 #################### VAE ####################
 # A Convolutional net used for Gymnasium environments like Car-Racing
@@ -7,7 +8,7 @@ import tinygrad.nn as nn
 class SimpleConvEnc:
     def __init__(self, input_shape, hidden_dim=32, kernel_size=4):
         # Encoder config
-        assert input_shape == (1, 3, 64, 64)
+        assert input_shape == [1, 3, 64, 64]
         self.hidden_dim = hidden_dim
         B, C, H, W = input_shape
         out_shape = 32
@@ -63,7 +64,6 @@ class SimpleVarAutoEnc:
     def __call__(self, x):
         return self.decode(self.encode(x)[0])
 
-
 #################### MLP ####################
 class MLP:
     def __init__(self, config):
@@ -78,13 +78,32 @@ class MLP:
         x = layers[-1].softmax()
         return x 
 
-
-
 #################### MDNLSTM ####################
 class MDNLSTM:
     def __init__(self, config):
-        self.lstm = LSTM()
-        self.mdn = MDN()
+        self.lstm = LSTM(config)
+        self.mdn = MDN(config)
 
     def __call__(self, x):
         pass
+
+class LSTMCell:
+    def __init__(self, config, input_size, hidden_size):
+        self.weights_ih = Tensor.uniform(hidden_size * 4, input_size)
+        self.bias_ih = Tensor.uniform(hidden_size * 4)
+        self.weights_hh = Tensor.uniform(hidden_size * 4, hidden_size)
+        self.bias_hh = Tensor.uniform(hidden_size * 4)
+
+    def __call__(self, x, h):
+        pass 
+
+class LSTM:
+    def __init__(self, config):
+        self.config = config
+
+    def __call__(self, x, h):
+        pass
+
+class MDN:
+    def __init__(self):
+        self.config = 
