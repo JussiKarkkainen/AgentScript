@@ -112,10 +112,20 @@ class LSTMCell:
 class LSTM:
     def __init__(self, config):
         self.config = config
-        self.cells = [LSTMCell(config["input_size"], config["hidden_size"] for cell in range(config["num_cells"]]
+        self.cells = [LSTMCell(config["input_size"], config["hidden_size"] for cell in range(config["num_cells"]))]
 
-    def __call__(self, x, h):
-        pass
+    def __call__(self, x, hc):
+        H, C = hc
+        B, T, D = x.shape
+        H, C = (Tensor.zeros(B, self.config["hidden_size"]),
+                Tensor.zeros(B, self.config["hidden_size"]))
+        outputs = []
+        for t in range(x.shape[0]):
+            output, hc = x[t] 
+            o, (H, C) = self.cells(x, (H, C))
+            outputs.append(o)
+        return outputs, (H, C)
+
 
 class MDN:
     def __init__(self):
