@@ -85,7 +85,8 @@ class MDNLSTM:
         self.mdn = MDN(config)
 
     def __call__(self, x):
-        pass
+        lstm_out = self.lstm(x)
+        raise Exception("LSTM")
 
 class LSTMCell:
     def __init__(self, input_size, hidden_size):
@@ -105,28 +106,32 @@ class LSTMCell:
         o = (x.matmul(self.W_xo) + H.matmul(self.W_ho) + self.b_o).sigmoid()
         c = (x.matmul(self.W_xc) + H.matmul(self.W_hc) + self.b_c).tanh()
 
-        C = f * C + i * c
-        H = o * C.tanh()
-        return o, (H, C)
+        C_new = f * C + i * c
+        H_new = o * C_new.tanh()
+        return H_new, C_new
 
 class LSTM:
     def __init__(self, config):
         self.config = config
-        self.cells = [LSTMCell(config["input_size"], config["hidden_size"] for cell in range(config["num_cells"]))]
+        self.cell = LSTMCell(config["input_size"], config["hidden_size"])
 
-    def __call__(self, x, hc):
-        H, C = hc
+    def __call__(self, x, hc=None):
         B, T, D = x.shape
-        H, C = (Tensor.zeros(B, self.config["hidden_size"]),
-                Tensor.zeros(B, self.config["hidden_size"]))
+        if hc is None:
+            hc = (Tensor.zeros(B, self.config["hidden_size"]), 
+                  Tensor.zeros(B, self.config["hidden_size"]))
+        H, C = hc
         outputs = []
-        for t in range(x.shape[0]):
-            output, hc = x[t] 
-            o, (H, C) = self.cells(x, (H, C))
-            outputs.append(o)
+        for t in range(T):
+            (H, C) = self.cell(x[:, t, :], (H, C))
+            outputs.append(H)
+        outputs = Tensor.stack(outputs, dim=1)
         return outputs, (H, C)
 
 
 class MDN:
-    def __init__(self):
-        self.config = 
+    def __init__(self, config):
+        self.config = config 
+
+    def __call__(self, x):
+        pass

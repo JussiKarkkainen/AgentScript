@@ -17,7 +17,7 @@ class Agent:
     def __init__(self, config: Dict[str, Dict[str, Any]]):
         self.config = config
         self.environment = Environment(config)
-        self.worldmodel = WorldModel(config["world_model"])
+        self.worldmodel = WorldModel(config)
         self.perception = Perception(config)
         #self.cost = Cost()
         self.actor = Actor(config["actor"])
@@ -44,9 +44,9 @@ class Agent:
     def load_weights(self):
         pass
 
-    def act(self, obs, wm_state):
+    def act(self, obs):
         latent = self.perception.inference(obs)
-        pred, wm_state = self.worldmodel.predict(latent, wm_state)
+        pred, wm_state = self.worldmodel.predict(latent)
         raise Exception("single world model step")
         action = self.actor(latent, pred)
         return action, wm_state
@@ -59,10 +59,11 @@ class Agent:
         self.load_weights()
         '''
         obs = self.environment.init()
-        wm_state = self.worldmodel.initial_state()
+        # wm_state = self.worldmodel.initial_state()
         terminate = None
         while no_terminate() and not terminate:
-            action, wm_state = self.act(obs, wm_state)
+            #action, wm_state = self.act(obs)
+            action = self.act(obs)
             raise Exception("single inference step")
             obs, reward, terminate = self.environment.step(action)
         

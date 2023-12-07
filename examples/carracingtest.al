@@ -13,7 +13,7 @@
         "audio": null
     },
     "world_model": {
-        "input_shape": 32,
+        "input_size": 32,
         "hidden_size": 256,
         "num_cells": 1
     },
