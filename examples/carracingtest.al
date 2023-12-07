@@ -15,7 +15,9 @@
     "world_model": {
         "input_size": 32,
         "hidden_size": 256,
-        "num_cells": 1
+        "num_cells": 1,
+        "num_gaussians": 5,
+        "mdn_output_size": 32
     },
     "actor": {
         "input_size": 64,

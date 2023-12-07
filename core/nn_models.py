@@ -86,7 +86,8 @@ class MDNLSTM:
 
     def __call__(self, x):
         lstm_out = self.lstm(x)
-        raise Exception("LSTM")
+        mdn_out = self.mdn(lstm_out[0])
+        return mdn_out
 
 class LSTMCell:
     def __init__(self, input_size, hidden_size):
@@ -128,10 +129,15 @@ class LSTM:
         outputs = Tensor.stack(outputs, dim=1)
         return outputs, (H, C)
 
-
 class MDN:
     def __init__(self, config):
         self.config = config 
+        self.mdn_layer = nn.Linear(config["hidden_size"], config["num_gaussians"] * config["mdn_output_size"] * 3)
 
     def __call__(self, x):
-        pass
+        mdn_out = self.mdn_layer(x)
+        pi, sigma, mu = mdn_out.chunk(3, dim=-1) 
+        pi = Tensor.softmax(pi)
+        sigma = Tensor.exp(sigma)
+        return pi, sigma, mu
+        
