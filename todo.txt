@@ -1,5 +1,14 @@
 ============================================================
-File: nn_models.py, Line: 92
+File: nn_models.py, Line: 90
+        lstm_out = self.lstm(x)
+        mdn_out = self.mdn(lstm_out[0])
+        # TODO: Implement correct sampling for MDN
+        return mdn_out[0]
+
+============================================================
+
+============================================================
+File: nn_models.py, Line: 95
 class LSTMCell:
     def __init__(self, input_size, hidden_size):
         # TODO: These weights can be unified, which requires fewer matmuls, find out how it's equivelant to this

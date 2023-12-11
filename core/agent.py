@@ -1,10 +1,10 @@
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 from core.environment import Environment
 from core.perception import Perception
 from core.world_model import WorldModel
 from tinygrad.tensor import Tensor
 from core.actor import Actor
-
+import numpy as np
 
 def no_terminate() -> bool:
     """
@@ -23,16 +23,6 @@ class Agent:
         self.actor = Actor(config["actor"])
         #self.short_term_memory = ShortTermMemory()
 
-    def act(self, observation):
-        observation = Tensor(observation)
-        observation = observation.reshape(1, 3, 64, 64)
-        z = self.perceive(observation)
-        z_t1 = self.worldmodel.predict(z, self.initial_state)
-        a = self.actor.act(z, z_t1)
-        x_hat = self.perception.decode(z)
-        print(x_hat.shape)
-        raise Exception  
-    
     def train(self):
         if self.config["meta"]["make_dataset"]:
             datasets = self.environment.create_datasets()
@@ -44,12 +34,12 @@ class Agent:
     def load_weights(self):
         pass
 
-    def act(self, obs):
+    def act(self, obs: np.ndarray) -> Tensor:
         latent = self.perception.inference(obs)
-        pred, wm_state = self.worldmodel.predict(latent)
-        raise Exception("single world model step")
-        action = self.actor(latent, pred)
-        return action, wm_state
+        pred = self.worldmodel.predict(latent)
+        action = self.actor.action(latent, pred)
+        raise Exception("single actor step")
+        return action
 
     def execute(self):
         '''

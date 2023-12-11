@@ -87,7 +87,8 @@ class MDNLSTM:
     def __call__(self, x):
         lstm_out = self.lstm(x)
         mdn_out = self.mdn(lstm_out[0])
-        return mdn_out
+        # TODO: Implement correct sampling for MDN
+        return mdn_out[0]
 
 class LSTMCell:
     def __init__(self, input_size, hidden_size):

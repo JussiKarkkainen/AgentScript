@@ -15,7 +15,7 @@ class WorldModel:
     def predict(self, x):
         # Add batch dim
         x = x.unsqueeze(0)
-        out, hc = self.model(x)
+        out = self.model(x)
         return out 
 
 

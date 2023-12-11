@@ -13,7 +13,7 @@ def preprocess(observation: np.ndarray) -> np.ndarray:
     return resized
 
 class Environment:
-    def __init__(self, config):
+    def __init__(self, config: Dict[str, Dict[str, str]]):
         self.config = config
         self.make_env() 
 
@@ -59,7 +59,7 @@ class Environment:
             raise NotImplementedError("The Environment you are using is not yet supported")
         self.env = gym.make(self.config["data_config"]["env"], render_mode="rgb_array")
 
-    def init(self):
+    def init(self) -> np.ndarray:
         obs, info = self.env.reset()
         obs = preprocess(obs)
         return obs
