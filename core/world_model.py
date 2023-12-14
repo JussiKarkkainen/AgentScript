@@ -7,10 +7,14 @@ class WorldModel:
         self.config = config
         self.model = MDNLSTM(config["world_model"]) 
     
-    """
-    def initial_state(self):
-        return Tensor.zeros(self.config["world_model"]["input_size"], self.config["world_model"]["hidden_size"])
-    """
+    def train(self):
+        pass
+
+    def loss(self, logmix, mean, logstd, y):
+        y = y.unsqueeze(1)  # Adjust the shape of y for broadcasting
+        v = logmix + log_normal_pdf(y, mean, logstd)
+        v = torch.logsumexp(v, dim=1, keepdim=True)
+        return -torch.mean(v)
 
     def predict(self, x):
         # Add batch dim

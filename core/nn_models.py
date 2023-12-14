@@ -80,13 +80,16 @@ class MLP:
 
 #################### MDNLSTM ####################
 class MDNLSTM:
-    def __init__(self, config):
+    def __init__(self, config, sample=True):
         self.lstm = LSTM(config)
         self.mdn = MDN(config)
 
     def __call__(self, x):
         lstm_out = self.lstm(x)
-        mdn_out = self.mdn(lstm_out[0])
+        means, variances, mixture_coef = self.mdn(lstm_out[0])
+        if sample:
+            
+
         # TODO: Implement correct sampling for MDN
         return mdn_out[0]
 
@@ -134,11 +137,15 @@ class MDN:
     def __init__(self, config):
         self.config = config 
         self.mdn_layer = nn.Linear(config["hidden_size"], config["num_gaussians"] * config["mdn_output_size"] * 3)
+        
+    def log_normal_pdf(self, y, mean, log_std):
+        var = torch.exp(2 * log_std)
+        log_prob = -((y - mean) ** 2) / (2 * var) - log_std - torch.log(torch.sqrt(2 * torch.pi))
+        return log_prob
 
     def __call__(self, x):
         mdn_out = self.mdn_layer(x)
-        pi, sigma, mu = mdn_out.chunk(3, dim=-1) 
-        pi = Tensor.softmax(pi)
-        sigma = Tensor.exp(sigma)
-        return pi, sigma, mu
+        means, logstd, log_mixture_coef = mdn_out.chunk(3, dim=-1) 
+        log_mixture_coef = log_mixture_coef - torch.logsumexp(logmix, dim=1, keepdim=True)                 # Make sure coeffiecients sum to 1
+        return means, logstd, log_mixture_coef
         
