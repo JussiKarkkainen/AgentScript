@@ -1,5 +1,5 @@
-### AgentScript
-![Tests](https://github.com/JussiKarkkainen/AgentLib/.github/workflows/python-app.yml/badge.svg)
+# AgentScript
+![Tests](https://github.com/JussiKarkkainen/AgentLib/actions/workflows/python-app.yml/badge.svg)
 
 
 ## Introduction
