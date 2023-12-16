@@ -87,8 +87,6 @@ class MDNLSTM:
     def __call__(self, x):
         lstm_out = self.lstm(x)
         means, variances, mixture_coef = self.mdn(lstm_out[0])
-        if sample:
-            
 
         # TODO: Implement correct sampling for MDN
         return mdn_out[0]
