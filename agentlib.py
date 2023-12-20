@@ -1,5 +1,5 @@
 import sys
-from parser.config_parser import json_config_parser, config_parser
+from parser.config_parser import * 
 from core.agent import Agent
 import os
 
@@ -10,9 +10,13 @@ if __name__ == "__main__":
     with open(config_file, "r") as f:
         contents = f.read() 
         if os.getenv("SCRIPT"):
-            config = config_parser(contents)
+            config, python = config_parser(contents)
         else:
             config = json_config_parser(contents)
+    
+    config_constructors = config_builder(config)
+
+
 
     agent = Agent(config)
     agent.execute()

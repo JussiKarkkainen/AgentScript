@@ -9,7 +9,7 @@ replay_buffer:
   batch_size: 64
 
 #DEFINE CONFIG
-dqn_agent:
+agent:
   type: DQN
   network:
     input_shape: 4  # Number of input features
