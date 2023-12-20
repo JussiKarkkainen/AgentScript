@@ -16,6 +16,8 @@ def no_terminate() -> bool:
 class Agent:
     def __init__(self, config: Dict[str, Dict[str, Any]]):
         self.config = config
+        print(config)
+        raise Exception
         self.environment = Environment(config)
         self.worldmodel = WorldModel(config)
         self.perception = Perception(config)

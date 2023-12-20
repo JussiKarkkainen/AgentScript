@@ -1,6 +1,7 @@
 import sys
-from parser.config_parser import json_config_parser, custom_config_parser, config_parser
+from parser.config_parser import json_config_parser, config_parser
 from core.agent import Agent
+import os
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -8,8 +9,10 @@ if __name__ == "__main__":
     config_file = sys.argv[1]
     with open(config_file, "r") as f:
         contents = f.read() 
-        config = config_parser(contents)
-    
-    raise Exception
+        if os.getenv("SCRIPT"):
+            config = config_parser(contents)
+        else:
+            config = json_config_parser(contents)
+
     agent = Agent(config)
     agent.execute()

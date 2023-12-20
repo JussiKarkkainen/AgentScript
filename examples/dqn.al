@@ -1,14 +1,11 @@
-# Json config for World Models
+# Json config for a Deep Q network
 
 {
     "perception": {
         "vision_resolution": [
-            1,
-            3,
-            64,
-            64
+            4
         ],
-        "model": "CNN"
+        "model": "MLP",
         "model_params": {
             "hidden_dim": 32,
             "enc_kernel_size": 4,
@@ -18,25 +15,16 @@
         }
     },
     "world_model": {
-        "model": "MDNLSTM",
-        "model_params": {
-            "input_shape": 32,
-            "hidden_size": 256
-        }
+        "model": null
     },
     "actor": {
-        "model": "MLP",
-        "model_params": {
-            "input_size": 64,
-            "action_space": "discrete",
-            "actions": 5
-        }
+        "model": null
     },
-    "algorithm": "WorldModel",
+    "algorithm": "DQN",
     "data_config": {
         "num_episodes": 5,
         "max_frames": 10,
-        "env": "CarRacing-v2",
+        "env": "CartPole-v1",
         "policy": "random"
     },
     "meta": {
@@ -46,3 +34,4 @@
         "dataset_path": "tests/datasets/"
     }
 }
+
