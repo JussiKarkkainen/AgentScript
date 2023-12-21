@@ -1,6 +1,7 @@
 import json
 import yaml
 from typing import List, Tuple, Dict
+import utils
 
 def json_config_parser(config: str) -> Dict:
     config_dict = json.loads(config)
@@ -15,9 +16,6 @@ def config_parser(config_str: str) -> Tuple[List[Dict[str, Dict[str, str]]], Lis
     return parsed_config_sections, python_sections
 
 
-accepted_configs = ["environment", "replay_buffer", "agent"]
-
-
 def validate_config(config_dict: Dict[str, List[str]]) -> bool:
     for key in config_dict.keys():
         if key == "environment":
@@ -29,13 +27,3 @@ def validate_config(config_dict: Dict[str, List[str]]) -> bool:
         else:
             return
 
-def config_builder(config_sections: List[Dict[str, Dict[str, str]]]):
-    configs = []
-    for config in config_sections:
-        for key in config.keys():
-            assert key in accepted_configs, f"Illegal configuration object: {config}"
-        configs.append(config)
-
-    
-    
-    raise Exception

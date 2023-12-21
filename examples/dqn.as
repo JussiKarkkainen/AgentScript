@@ -1,27 +1,27 @@
 #DEFINE CONFIG
-environment:
+Environment:
   id: CartPole-v1
   horizon: 1000
 
 #DEFINE CONFIG
-replay_buffer:
+ReplayBuffer:
   capacity: 10000
   batch_size: 64
 
 #DEFINE CONFIG
-agent:
+Agent:
   type: DQN
   network:
-    input_shape: 4  # Number of input features
-    hidden_layers: [32, 64]  # Sizes of hidden layers
-    output_shape: 2  # Number of output actions
+    input_shape: 4  
+    hidden_layers: [32, 64] 
+    output_shape: 2  
     activation: relu
   exploration:
     type: EpsGreedy
     epsilon: 1.0
     decay_rate: 0.99
     min_epsilon: 0.1
-  memory: replay_buffer  # Reference to the replay buffer
+  memory: replay_buffer 
   target_update_frequency: 100
   discount_factor: 0.99
   loss_function: huber_loss

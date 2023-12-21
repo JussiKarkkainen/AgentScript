@@ -1,21 +1,17 @@
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, List
+import utils
 from core.environment import Environment
+from core.replay_buffer import ReplayBuffer
 from core.perception import Perception
 from core.world_model import WorldModel
 from tinygrad.tensor import Tensor
 from core.actor import Actor
 import numpy as np
 
-def no_terminate() -> bool:
-    """
-    Checks if the current agent & eenvironment should terminate.
-    Checks for: User input, terminal failure
-    """
-    return True
-
 class Agent:
-    def __init__(self, config: Dict[str, Dict[str, Any]]):
+    def __init__(self, config: Dict[str, Dict[str, Any]], python: List[str]):
         self.config = config
+        self.python = python
         print(config)
         raise Exception
         self.environment = Environment(config)
@@ -62,3 +58,9 @@ class Agent:
         self.environment.shutdown()
         exit()
 
+def no_terminate() -> bool:
+    """
+    Checks if the current agent & eenvironment should terminate.
+    Checks for: User input, terminal failure
+    """
+    return True
