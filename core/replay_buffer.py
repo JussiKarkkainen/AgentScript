@@ -1,10 +1,7 @@
-
-
-
-
+from typing import Dict
 
 
 class ReplayBuffer:
-    def __init__(self, config):
-        self.config = self.config
+    def __init__(self, config: Dict[str, int]):
+        self.config = config
 

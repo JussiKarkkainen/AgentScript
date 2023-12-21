@@ -1,10 +1,10 @@
-from typing import Dict
+from typing import Dict, Any
 import gymnasium as gym
 import numpy as np
 import os
 import cv2
 
-implemented_envs = {"gym": ["CarRacing-v2"]}
+implemented_envs = {"gym": ["CarRacing-v2", "CartPole-v1"]}
 
 def preprocess(observation: np.ndarray) -> np.ndarray:
     # TODO: Where should preprocessing be done?
@@ -13,7 +13,7 @@ def preprocess(observation: np.ndarray) -> np.ndarray:
     return resized
 
 class Environment:
-    def __init__(self, config: Dict[str, Dict[str, str]]):
+    def __init__(self, config: Dict[str, Any]):
         self.config = config
         self.make_env() 
 
@@ -55,9 +55,9 @@ class Environment:
         return dataset_paths
     
     def make_env(self):
-        if self.config["data_config"]["env"] not in implemented_envs["gym"]:
+        if self.config["name"] not in implemented_envs["gym"]:
             raise NotImplementedError("The Environment you are using is not yet supported")
-        self.env = gym.make(self.config["data_config"]["env"], render_mode="rgb_array")
+        self.env = gym.make(self.config["name"], render_mode="rgb_array")
 
     def init(self) -> np.ndarray:
         obs, info = self.env.reset()

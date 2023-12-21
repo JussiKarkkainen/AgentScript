@@ -24,6 +24,5 @@ class Builder:
             elif module[1] == "Agent":
                 self.agent = module[0](module[2])
 
-
         print(self.modules)
         raise Exception

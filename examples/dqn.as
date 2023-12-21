@@ -1,6 +1,6 @@
 #DEFINE CONFIG
 Environment:
-  id: CartPole-v1
+  name: CartPole-v1
   horizon: 1000
 
 #DEFINE CONFIG
