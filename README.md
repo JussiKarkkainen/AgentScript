@@ -29,8 +29,8 @@ while not converged:
 ```
 Most RL agents can be explained using the above loop. Therefore writing it everytime
 you want to implement an RL agent can get tedious. AgentScript simplifies this in two ways:
-1. It provides implementations of Replay Buffers and environments that the user can take advantage
-   if and configure to their needs using a YAML-configuration.
+1. It provides implementations of Replay Buffers and Environments that the user can take advantage
+   of and configure to their needs using a YAML-configuration.
 2. It allows the user to define the Neural Network part of the RL agent (```agent.forward()```)
    as well as the ```update()``` function that defines how the agent learns. The rest is handled by 
    the library itself.
@@ -43,9 +43,10 @@ define the Neural Networks and the Agent's update functions. The Neural Networks
 using [tinygrad](https://github.com/tinygrad/tinygrad).
 
 ## Example
-Here is an example config file that implements a DQN agent. More examples are in the ```examples/```
+Here is an example file that implements a DQN agent. More examples are in the ```examples/```
 directory.
 
+To train the agent, run ```python3 agentlib.py examples/dqn.as```
 
 ```
 #DEFINE CONFIG
@@ -108,3 +109,7 @@ def dqn_update(agent, batch):
     loss = F.mse_loss(curr_Q, expected_Q.detach())
     return loss
 ```
+
+## TODO
+- [] Support for online learning agents
+- [] Support for offline learning agents
