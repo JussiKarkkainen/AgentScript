@@ -111,5 +111,5 @@ def dqn_update(agent, batch):
 ```
 
 ## TODO
-- [] Support for online learning agents
-- [] Support for offline learning agents
+- [ ] Support for online learning agents
+- [ ] Support for offline learning agents
