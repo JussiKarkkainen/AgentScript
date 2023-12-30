@@ -61,5 +61,6 @@ class Environment:
 
     def init(self) -> np.ndarray:
         obs, info = self.env.reset()
-        obs = preprocess(obs)
+        if self.config["preprocess"]:
+            obs = preprocess(obs)
         return obs

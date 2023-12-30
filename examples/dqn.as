@@ -2,6 +2,7 @@
 Environment:
   name: CartPole-v1
   horizon: 1000
+  preprocess: False
 
 #DEFINE CONFIG
 ReplayBuffer:
@@ -22,12 +23,15 @@ Agent:
     decay_rate: 0.99
     min_epsilon: 0.1
   memory: replay_buffer 
-  target_update_frequency: 100
+  tnameget_update_frequency: 100
   discount_factor: 0.99
   loss_function: huber_loss
   optimizer:
     type: Adam
     learning_rate: 0.001
+  meta:
+    train: false
+    weight_path: None
 
 #DEFINE PYTHON
 class DQNNetwork(nn.Module):

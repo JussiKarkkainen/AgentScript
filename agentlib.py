@@ -1,7 +1,7 @@
 import sys
 from parser.config_parser import * 
 from core.agent import Agent
-from core.builder import Builder
+from core.builder import builder
 import os
 
 if __name__ == "__main__":
@@ -15,7 +15,5 @@ if __name__ == "__main__":
         else:
             config = json_config_parser(contents)
     
-    builder = Builder(config, python)
-
-    agent = Agent(config, python)
-    agent.execute()
+    agent, env, replay_buffer = builder(config, python)
+    agent.execute(env, replay_buffer)

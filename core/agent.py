@@ -8,10 +8,42 @@ from tinygrad.tensor import Tensor
 from core.actor import Actor
 import numpy as np
 
+
 class Agent:
-    def __init__(self, config: Dict[str, Dict[str, Any]], python: List[str]):
+    def __init__(self, config: Dict[str, Dict[str, Any]]):
         self.config = config
-        self.python = python
+    
+    def load_weights(self):
+        pass
+
+    def execute(self, env, replay_buffer):
+    
+        if self.config["meta"]["train"] == "True":
+            self.train()
+        self.load_weights()
+        obs = env.init() 
+        raise Exception("execute")
+        # wm_state = self.worldmodel.initial_state()
+        terminate = None
+        while no_terminate() and not terminate:
+            #action, wm_state = self.act(obs)
+            action = self.act(obs)
+            raise Exception("single inference step")
+            obs, reward, terminate = self.environment.step(action)
+        
+        self.environment.shutdown()
+        exit()
+        raise Exception("execute")
+        pass
+
+
+
+
+
+"""
+class Agent:
+    def __init__(self, config: Dict[str, Dict[str, Any]]):
+        self.config = config
         print(config)
         raise Exception
         self.environment = Environment(config)
@@ -59,8 +91,9 @@ class Agent:
         exit()
 
 def no_terminate() -> bool:
-    """
+    '''
     Checks if the current agent & eenvironment should terminate.
     Checks for: User input, terminal failure
-    """
+    '''
     return True
+"""
