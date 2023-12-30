@@ -15,7 +15,11 @@ class Runner:
         pass
     
     def update(self):
-        pass
+        if len(replay_buffer) < self.agent.config["training"]["batch_size"]:
+            return
+        batch = self.replay_buffer.sample()
+        loss = self.agent.update(batch)
+        return loss
 
     def train(self):
         # TODO: This is going to be DQN specific at first, to be fixed later
@@ -27,7 +31,7 @@ class Runner:
                 epsilon = self.agent.config["exploration"]["epsilon_end"] + (self.agent.config["exploration"]["epsilon_start"] \
                         - self.agent.config["exploration"]["epsilon_end"]) * math.exp(-1. * episode / self.agent.config["exploration"]["epsilon_decay"])
                 if random.random() > epsilon:
-                    action = network(torstate)
+                    action = network(state)
                     action = action.max(0)
                     action = action[1].item()
                 else:

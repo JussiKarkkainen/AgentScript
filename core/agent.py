@@ -10,8 +10,9 @@ import numpy as np
 
 
 class Agent:
-    def __init__(self, config: Dict[str, Dict[str, Any]]):
+    def __init__(self, config: Dict[str, Dict[str, Any]], python_update):
         self.config = config
+        self.update = eval(python_update)
     
 
 

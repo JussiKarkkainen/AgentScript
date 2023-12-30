@@ -18,7 +18,7 @@ def builder(config: List[Dict[str, dict[str, Any]]], python: List[str]):
         elif module[1] == "ReplayBuffer":
             replay_buffer = module[0](module[2])
         elif module[1] == "Agent":
-            agent = module[0](module[2])
+            agent = module[0](module[2], python[1])
 
     # Neural Network definition
     network = NeuralNetwork(python[0])

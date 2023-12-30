@@ -1,14 +1,32 @@
 ============================================================
-File: nn_models.py, Line: 90
-        lstm_out = self.lstm(x)
-        mdn_out = self.mdn(lstm_out[0])
+File: runner.py, Line: 21
+
+    def train(self):
+        # TODO: This is going to be DQN specific at first, to be fixed later
+        scores = deque(maxlen=100)
+        for episode in range(self.agent.config["training"]["episodes"]):
+============================================================
+
+============================================================
+File: builder.py, Line: 9
+
+def builder(config: List[Dict[str, dict[str, Any]]], python: List[str]):
+    # TODO: Validate the configuration, Use the validate_config() function in config_parser.py
+    
+    
+============================================================
+
+============================================================
+File: nn_models.py, Line: 91
+        means, variances, mixture_coef = self.mdn(lstm_out[0])
+
         # TODO: Implement correct sampling for MDN
         return mdn_out[0]
 
 ============================================================
 
 ============================================================
-File: nn_models.py, Line: 95
+File: nn_models.py, Line: 96
 class LSTMCell:
     def __init__(self, input_size, hidden_size):
         # TODO: These weights can be unified, which requires fewer matmuls, find out how it's equivelant to this
@@ -35,9 +53,9 @@ def preprocess(observation: np.ndarray) -> np.ndarray:
 ============================================================
 
 ============================================================
-File: perception.py, Line: 9
+File: perception.py, Line: 10
 
-def load_dataset(path: str, num_episodes: int, num_frames: int) -> np.array:
+def load_dataset(path: str, num_episodes: int, num_frames: int) -> np.ndarray:
     # TODO: The input resolution is hardcoded for CarRacing example, fix this
     data = np.zeros((num_episodes, num_frames, 64, 64, 3), dtype=np.uint8)
     files = [os.path.join(os.getcwd()+"/tests/datasets/vision", file) for file in os.listdir(path)]
