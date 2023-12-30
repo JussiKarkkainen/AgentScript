@@ -36,7 +36,7 @@ Agent:
     weight_path: None
 
 #DEFINE PYTHON
-class DQNNetwork(nn.Module):
+class Network(nn.Module):
     def __init__(self, config):
         super(DQNNetwork, self).__init__()
         self.layers = nn.ModuleList()
@@ -52,7 +52,7 @@ class DQNNetwork(nn.Module):
         return self.output(x)
 
 #DEFINE PYTHON
-def dqn_update(agent, batch):
+def update(agent, batch):
     states, actions, rewards, next_states, dones = batch['states'], batch['actions'], batch['rewards'], batch['next_states'], batch['dones']
     curr_Q = agent.q_network(states).gather(1, actions.unsqueeze(-1)).squeeze(-1)
     next_Q = agent.target_network(next_states).max(1)[0]

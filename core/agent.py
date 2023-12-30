@@ -12,8 +12,9 @@ import numpy as np
 class Agent:
     def __init__(self, config: Dict[str, Dict[str, Any]], python_update):
         self.config = config
-        self.update = eval(python_update)
-    
+        local_scope = {}
+        exec(python_update, globals(), local_scope)
+        self.update_function = local_scope['update'] 
 
 
 

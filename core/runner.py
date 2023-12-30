@@ -14,6 +14,9 @@ class Runner:
     def load_weights(self):
         pass
     
+    def save_weights(self):
+        pass
+
     def update(self):
         if len(replay_buffer) < self.agent.config["training"]["batch_size"]:
             return
@@ -66,6 +69,8 @@ class Runner:
     def execute(self):
         if self.agent.config["meta"]["train"] == True:
             self.train()
+            self.save_weights()
+            exit()
         self.load_weights()
         raise Exception("execute")
         terminate = None
