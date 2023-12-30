@@ -2,16 +2,14 @@ from typing import Dict, Any, Tuple, List
 import utils
 from core.environment import Environment
 from core.replay_buffer import ReplayBuffer
-from core.perception import Perception
-from core.world_model import WorldModel
-from core.actor import Actor
 from core.agent import Agent
-from tinygrad.tensor import Tensor
-import numpy as np
+from core.networks import NeuralNetwork
 
 def builder(config: List[Dict[str, dict[str, Any]]], python: List[str]):
     # TODO: Validate the configuration, Use the validate_config() function in config_parser.py
-
+    
+    
+    # Turns the string config values into the actual classes
     modules = [(eval(list(conf.keys())[0]), list(conf.keys())[0], list(conf.values())[0]) for conf in config]
     # module[0] = module class, module[1] = module name, module[2] = module init params
     for module in modules:
@@ -21,6 +19,9 @@ def builder(config: List[Dict[str, dict[str, Any]]], python: List[str]):
             replay_buffer = module[0](module[2])
         elif module[1] == "Agent":
             agent = module[0](module[2])
+
+    # Neural Network definition
+    network = NeuralNetwork(python[0])
     
-    return agent, environment, replay_buffer
+    return agent, environment, replay_buffer, network
 

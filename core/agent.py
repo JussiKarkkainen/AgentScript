@@ -13,28 +13,6 @@ class Agent:
     def __init__(self, config: Dict[str, Dict[str, Any]]):
         self.config = config
     
-    def load_weights(self):
-        pass
-
-    def execute(self, env, replay_buffer):
-    
-        if self.config["meta"]["train"] == "True":
-            self.train()
-        self.load_weights()
-        obs = env.init() 
-        raise Exception("execute")
-        # wm_state = self.worldmodel.initial_state()
-        terminate = None
-        while no_terminate() and not terminate:
-            #action, wm_state = self.act(obs)
-            action = self.act(obs)
-            raise Exception("single inference step")
-            obs, reward, terminate = self.environment.step(action)
-        
-        self.environment.shutdown()
-        exit()
-        raise Exception("execute")
-        pass
 
 
 

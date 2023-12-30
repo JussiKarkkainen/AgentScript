@@ -18,19 +18,21 @@ Agent:
     output_shape: 2  
     activation: relu
   exploration:
-    type: EpsGreedy
-    epsilon: 1.0
-    decay_rate: 0.99
-    min_epsilon: 0.1
+    epsilon_start: 1.0
+    epsilon_end: 0.01
+    epsilon_decay: 200
   memory: replay_buffer 
   tnameget_update_frequency: 100
   discount_factor: 0.99
   loss_function: huber_loss
+  training:
+    episodes: 1000
+    max_time_steps: 10000
   optimizer:
     type: Adam
     learning_rate: 0.001
   meta:
-    train: false
+    train: true
     weight_path: None
 
 #DEFINE PYTHON
