@@ -14,7 +14,7 @@ class Agent:
         self.config = config
         local_scope = {}
         exec(python_update, globals(), local_scope)
-        self.update_function = local_scope['update'] 
+        self.update = local_scope['update'] 
 
 
 

@@ -24,10 +24,11 @@ Agent:
   memory: replay_buffer 
   tnameget_update_frequency: 100
   discount_factor: 0.99
-  loss_function: huber_loss
+  loss_function: mseloss
   training:
     episodes: 1000
     max_time_steps: 10000
+    batch_size: 32
   optimizer:
     type: Adam
     learning_rate: 0.001
@@ -36,27 +37,26 @@ Agent:
     weight_path: None
 
 #DEFINE PYTHON
-class Network(nn.Module):
+class Network:
     def __init__(self, config):
-        super(DQNNetwork, self).__init__()
-        self.layers = nn.ModuleList()
+        self.layers = []
         input_size = config['network']['input_shape']
         for hidden_size in config['network']['hidden_layers']:
             self.layers.append(nn.Linear(input_size, hidden_size))
             input_size = hidden_size
         self.output = nn.Linear(input_size, config['network']['output_shape'])
 
-    def forward(self, x):
+    def __call__(self, x):
         for layer in self.layers:
-            x = torch.relu(layer(x))
+            x = layer(x).relu()
         return self.output(x)
 
 #DEFINE PYTHON
-def update(agent, batch):
+def update(network, batch):
     states, actions, rewards, next_states, dones = batch['states'], batch['actions'], batch['rewards'], batch['next_states'], batch['dones']
-    curr_Q = agent.q_network(states).gather(1, actions.unsqueeze(-1)).squeeze(-1)
-    next_Q = agent.target_network(next_states).max(1)[0]
-    expected_Q = rewards + (agent.gamma * next_Q * (1 - dones))
-    loss = F.mse_loss(curr_Q, expected_Q.detach())
+    curr_Q = network(states).gather(1, actions.unsqueeze(-1)).squeeze(-1)
+    next_Q = network(next_states).max(1)[0]
+    expected_Q = rewards + (config["discount_factor"] * next_Q * (1 - dones))
+    loss = mse_loss(curr_Q, expected_Q.detach())
     return loss
 

@@ -46,7 +46,7 @@ using [tinygrad](https://github.com/tinygrad/tinygrad).
 Here is an example file that implements a DQN agent. More examples are in the ```examples/```
 directory.
 
-To train the agent, run ```python3 agentlib.py examples/dqn.as```
+To train the agent, run ```SCRIPT=1 python3 agentlib.py examples/dqn.as```
 
 ```
 #DEFINE CONFIG

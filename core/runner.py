@@ -1,8 +1,10 @@
 import random
 import numpy as np
 import math
-from collections import deque
+from collections import deque, namedtuple
 from tinygrad.tensor import Tensor
+
+Transition = namedtuple("Transition", "state action reward next_state done")
 
 class Runner:
     def __init__(self, agent, env, replay_buffer, network):
@@ -17,11 +19,11 @@ class Runner:
     def save_weights(self):
         pass
 
-    def update(self):
-        if len(replay_buffer) < self.agent.config["training"]["batch_size"]:
+    def update_fun(self):
+        if len(self.replay_buffer) < self.agent.config["training"]["batch_size"]:
             return
-        batch = self.replay_buffer.sample()
-        loss = self.agent.update(batch)
+        batch = self.replay_buffer.sample(self.agent.config["training"]["batch_size"])
+        loss = self.agent.update(self.network, batch)
         return loss
 
     def train(self):
@@ -45,13 +47,14 @@ class Runner:
                 done = terminated or truncated
 
                 # Store the transition in replay buffer
-                self.replay_buffer.push(state, action, reward, next_state, done)
+                transition = Transition(state=state, action=action, reward=reward, next_state=next_state, done=done)
+                self.replay_buffer.push(transition)
 
                 state = next_state
                 episode_reward += reward
 
                 # Update the network
-                self.update()
+                self.update_fun()
 
                 if done:
                     break

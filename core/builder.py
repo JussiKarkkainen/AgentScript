@@ -21,7 +21,7 @@ def builder(config: List[Dict[str, dict[str, Any]]], python: List[str]):
             agent = module[0](module[2], python[1])
 
     # Neural Network definition
-    network = NeuralNetwork(python[0])
+    network = NeuralNetwork(python[0], module[2])
     
     return agent, environment, replay_buffer, network
 
