@@ -48,7 +48,7 @@ directory.
 
 To train the agent, run ```SCRIPT=1 python3 agentlib.py examples/dqn.as```
 
-```
+```python
 #DEFINE CONFIG
 Environment:
   name: CartPole-v1
