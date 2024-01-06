@@ -1,86 +1,91 @@
 import gymnasium as gym
-
-# Create the CartPole environment
-env = gym.make("CartPole-v1")
-
+import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+import torch.optim as optim
+from torch.distributions import Categorical
 
-class PolicyNetwork(nn.Module):
-    def __init__(self, input_dim, output_dim):
-        super(PolicyNetwork, self).__init__()
-        self.fc1 = nn.Linear(input_dim, 128)
-        self.fc2 = nn.Linear(128, output_dim)
+# Hyperparameters
+learning_rate = 0.001
+gamma = 0.99
+
+# Environment
+env = gym.make('CartPole-v1')
+
+# Policy Network
+class Policy(nn.Module):
+    def __init__(self):
+        super(Policy, self).__init__()
+        self.fc = nn.Linear(env.observation_space.shape[0], 128)
+        self.fc2 = nn.Linear(128, env.action_space.n)
 
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = F.softmax(self.fc2(x))
-        return x
+        x = torch.relu(self.fc(x))
+        x = self.fc2(x)
+        return torch.softmax(x, dim=1)
 
-
-# Network parameters
-input_dim = env.observation_space.shape[0]
-output_dim = env.action_space.n
-
-# Create the policy network
-policy = PolicyNetwork(input_dim, output_dim)
-
-# Optimizer
-import torch.optim as optim
-learning_rate = 0.01
+policy = Policy()
 optimizer = optim.Adam(policy.parameters(), lr=learning_rate)
 
+# Function to calculate Q-values
+def calc_qvals(rewards):
+    R = 0.0
+    qvals = []
+    for r in reversed(rewards):
+        R = r + gamma * R
+        qvals.insert(0, R)
+    return qvals
 
-from collections import deque
+# REINFORCE algorithm
+def reinforce():
+    state, info = env.reset()
+    log_probs = []
+    rewards = []
+    done = False
 
-def train(policy, optimizer, episodes):
-    for episode in range(episodes):
-        state, info = env.reset()
-        log_probs = []
-        rewards = []
-        done = False
+    while not done:
+        state = torch.from_numpy(state).float().unsqueeze(0)
+        probs = policy(state)
+        m = Categorical(probs)
+        action = m.sample()
+        next_state, reward, terminated, truncated, info = env.step(action.item())
+        done = terminated or truncated
 
-        # Generate a trajectory
-        while not done:
-            state = torch.FloatTensor(state)
-            probs = policy(state)
-            m = torch.distributions.Categorical(probs)
-            action = m.sample()
-            next_state, reward, terminated, truncated, _ = env.step(action.item())
-            done = terminated or truncated
+        log_probs.append(m.log_prob(action))
+        rewards.append(reward)
 
-            log_probs.append(m.log_prob(action))
-            rewards.append(reward)
-            state = next_state
+        state = next_state
 
-        # Calculate returns
-        returns = []
-        G = 0
-        for reward in reversed(rewards):
-            G = reward + gamma * G
-            returns.insert(0, G)
+    # Calculate Q-values
+    qvals = calc_qvals(rewards)
+    qvals = torch.tensor(qvals)
+    qvals = (qvals - qvals.mean()) / (qvals.std() + 1e-5)
 
-        # Policy gradient update
-        returns = torch.tensor(returns)
-        policy_loss = []
-        for log_prob, Gt in zip(log_probs, returns):
-            policy_loss.append(-log_prob * Gt)
+    # Policy gradient update
+    optimizer.zero_grad()
+    policy_loss = sum([-log_prob * q for log_prob, q in zip(log_probs, qvals)])
+    policy_loss.backward()
+    optimizer.step()
+    return policy_loss, sum(rewards)
 
-        optimizer.zero_grad()
-        policy_loss = torch.tensor(policy_loss, requires_grad=True).sum()
-        policy_loss.backward()
-        optimizer.step()
+# Training loop
+num_episodes = 500
+for episode in range(num_episodes):
+    loss, reward = reinforce()
+    if episode % 50 == 0:
+        print(f"Episode {episode}, Loss {loss}, Rewards {reward}")
 
-        # Print episode info
-        total_reward = sum(rewards)
-        print(f"Episode: {episode}, Total Reward: {total_reward}")
+env.close()
 
-gamma = 0.99
-episodes = 10000
-train(policy, optimizer, episodes)
-
-
-
-
-
+testenv = gym.make("CartPole-v1", render_mode="human")
+state, info = testenv.reset()
+done = False
+while not done:
+    state = torch.from_numpy(state).float().unsqueeze(0)
+    probs = policy(state)
+    m = Categorical(probs)
+    action = m.sample()
+    next_state, reward, terminated, truncated, info = testenv.step(action.item())
+    done = terminated or truncated
+    state = next_state
+testenv.close()
