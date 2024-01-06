@@ -8,4 +8,6 @@ class NeuralNetwork:
         self.network_class = local_scope['Network'](config)
     
     def __call__(self, x):
+        if type(x) != Tensor:
+            x = Tensor(x)
         return self.network_class(x)

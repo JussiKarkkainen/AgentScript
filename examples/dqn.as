@@ -52,11 +52,12 @@ class Network:
         return self.output(x)
 
 #DEFINE PYTHON
-def update(network, batch):
+def update(network, batch, config):
     states, actions, rewards, next_states, dones = batch['states'], batch['actions'], batch['rewards'], batch['next_states'], batch['dones']
-    curr_Q = network(states).gather(1, actions.unsqueeze(-1)).squeeze(-1)
+    curr_Q = network(states)
+    curr_Q = curr_Q.gather(actions.unsqueeze(-1), 1).squeeze(-1)
     next_Q = network(next_states).max(1)[0]
     expected_Q = rewards + (config["discount_factor"] * next_Q * (1 - dones))
-    loss = mse_loss(curr_Q, expected_Q.detach())
+    loss = ((curr_Q - expected_Q.detach()) ** 2).mean()
     return loss
 

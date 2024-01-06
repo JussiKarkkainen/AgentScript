@@ -23,7 +23,7 @@ class Runner:
         if len(self.replay_buffer) < self.agent.config["training"]["batch_size"]:
             return
         batch = self.replay_buffer.sample(self.agent.config["training"]["batch_size"])
-        loss = self.agent.update(self.network, batch)
+        loss = self.agent.update(self.network, batch, self.agent.config)
         return loss
 
     def train(self):
@@ -36,9 +36,8 @@ class Runner:
                 epsilon = self.agent.config["exploration"]["epsilon_end"] + (self.agent.config["exploration"]["epsilon_start"] \
                         - self.agent.config["exploration"]["epsilon_end"]) * math.exp(-1. * episode / self.agent.config["exploration"]["epsilon_decay"])
                 if random.random() > epsilon:
-                    action = network(state)
-                    action = action.max(0)
-                    action = action[1].item()
+                    action = self.network(state)
+                    action = int(action.argmax(0).numpy())
                 else:
                     action = self.env.env.action_space.sample()
 
