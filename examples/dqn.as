@@ -22,7 +22,6 @@ Agent:
     epsilon_end: 0.01
     epsilon_decay: 200
   memory: replay_buffer 
-  tnameget_update_frequency: 100
   discount_factor: 0.99
   loss_function: mseloss
   training:
