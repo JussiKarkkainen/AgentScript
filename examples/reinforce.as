@@ -44,4 +44,16 @@ class Network(nn.Module):
 
 #DEFINE PYTHON
 def update(network, batch, config):
-    pass
+    def calc_qvals(rewards):
+        R = 0.0
+        qvals = []
+        for r in reversed(rewards):
+            R = r + gamma * R
+            qvals.insert(0, R)
+        return qvals
+    
+    qvals = calc_qvals(batch["rewards"])
+    qvals = Tensor(qvals)
+    qvals = (qvals - qvals.mean()) / (qvals.std() + 1e-5)
+    policy_loss = sum([-log_prob * q for log_prob, q in zip(batch["log_probs"], qvals)])
+    return policy_loss
