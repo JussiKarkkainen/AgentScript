@@ -5,6 +5,10 @@ Environment:
   preprocess: False
 
 #DEFINE CONFIG
+ReplayBuffer:
+    episodic: True    
+
+#DEFINE CONFIG
 Agent:
   type: REINFORCE
   on_policy: True

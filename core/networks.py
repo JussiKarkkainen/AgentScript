@@ -7,7 +7,6 @@ class NeuralNetwork:
         exec(python_def, globals(), local_scope)
         self.network_class = local_scope['Network'](config)
     
-    
     def parameters(self):
         return nn.state.get_parameters(self.network_class)
 

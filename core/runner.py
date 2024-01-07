@@ -35,9 +35,10 @@ class Runner:
         pass
 
     def update_fun(self):
-        if len(self.replay_buffer) < self.agent.config["training"]["batch_size"]:
+        if self.replay_buffer and len(self.replay_buffer) < self.agent.config["training"]["batch_size"]:
             return
-        batch = self.replay_buffer.sample(self.agent.config["training"]["batch_size"])
+        if self.replay_buffer:
+            batch = self.replay_buffer.sample(self.agent.config["training"]["batch_size"])
         loss = self.agent.update(self.network, batch, self.agent.config)
         self.optimizer.zero_grad()
         loss.backward()
@@ -61,11 +62,11 @@ class Runner:
                     next_state, reward, terminated, truncated, info = self.env.env.step(action.item())
                     done = terminated or truncated
 
-                    log_probs.append(m.log_prob(action))
+                    log_probs.append(probs[action].log())
                     rewards.append(reward)
-
                     state = next_state
-                
+
+                self.replay_buffer.push((log_probs, rewards)) 
                 self.update_fun()
                     
             elif not self.agent.config["on_policy"]:

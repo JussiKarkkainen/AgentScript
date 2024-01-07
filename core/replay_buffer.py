@@ -6,8 +6,11 @@ from tinygrad.tensor import Tensor
 class ReplayBuffer:
     def __init__(self, config: Dict[str, int]):
         self.config = config
-        self.buffer = deque(maxlen=self.config["capacity"])
-    
+        if not self.config["episodic"]:
+            self.buffer = deque(maxlen=self.config["capacity"])
+        else:
+            self.buffer = []
+
     def push(self, transition):
         self.buffer.append(transition)
 
@@ -21,7 +24,7 @@ class ReplayBuffer:
             'dones': Tensor([t.done for t in sampled_transitions])
         }
         return batch
-
+    
     def __len__(self):
         return len(self.buffer)
 
