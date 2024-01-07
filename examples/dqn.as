@@ -12,6 +12,7 @@ ReplayBuffer:
 #DEFINE CONFIG
 Agent:
   type: DQN
+  on_policy: False
   network:
     input_shape: 4  
     hidden_layers: [32, 64] 

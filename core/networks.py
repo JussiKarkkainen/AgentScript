@@ -7,6 +7,10 @@ class NeuralNetwork:
         exec(python_def, globals(), local_scope)
         self.network_class = local_scope['Network'](config)
     
+    
+    def parameters(self):
+        return self.network_class.parameters()
+
     def __call__(self, x):
         if type(x) != Tensor:
             x = Tensor(x)

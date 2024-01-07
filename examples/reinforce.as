@@ -7,6 +7,7 @@ Environment:
 #DEFINE CONFIG
 Agent:
   type: REINFORCE
+  on_policy: True
   network:
     input_shape: 4  
     hidden_layers: [128] 
@@ -16,7 +17,6 @@ Agent:
   loss_function: NLLLoss
   training:
     episodes: 1000
-    max_time_steps: None
     batch_size: None
   optimizer:
     type: Adam
@@ -27,9 +27,8 @@ Agent:
 
 
 #DEFINE PYTHON
-class Network(nn.Module):
-    def __init__(self):
-        super(Policy, self).__init__()
+class Network:
+    def __init__(self, config):
         input_size = config['network']['input_shape']
         for hidden_size in config["network"]["hidden_layers"]:
             self.fc = nn.Linear(input_size, hidden_size)

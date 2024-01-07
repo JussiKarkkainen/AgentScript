@@ -11,6 +11,7 @@ def builder(config: List[Dict[str, dict[str, Any]]], python: List[str]):
     # Turns the string config values into the actual classes
     modules = [(eval(list(conf.keys())[0]), list(conf.keys())[0], list(conf.values())[0]) for conf in config]
     # module[0] = module class, module[1] = module name, module[2] = module init params
+    environment, replay_buffer, agent = None, None, None
     for module in modules:
         if module[1] == "Environment":
             environment = module[0](module[2])
