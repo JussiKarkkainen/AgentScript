@@ -9,7 +9,7 @@ class NeuralNetwork:
     
     
     def parameters(self):
-        return self.network_class.parameters()
+        return nn.state.get_parameters(self.network_class)
 
     def __call__(self, x):
         if type(x) != Tensor:

@@ -3,6 +3,7 @@ import numpy as np
 import math
 from collections import deque, namedtuple
 from tinygrad.tensor import Tensor
+import tinygrad.nn as nn
 
 Transition = namedtuple("Transition", "state action reward next_state done")
 
@@ -21,7 +22,7 @@ class Runner:
         
         # TODO: Need to pass other params like: momentum, weight_decay, etc...
         try:
-            OptimizerClass = optimizers[config["optimizer"]]
+            OptimizerClass = optimizers[self.agent.config["optimizer"]["type"]]
             self.optimizer = OptimizerClass(self.network.parameters(), self.agent.config["optimizer"]["learning_rate"])
         except KeyError:
             raise NotImplementedError(f"The specified optimizer '{config['optimizer']}' is not available. Available optimizers: {', '.join(optimizers.keys())}")
@@ -55,11 +56,9 @@ class Runner:
                 done = False
 
                 while not done:
-                    state = torch.from_numpy(state).float().unsqueeze(0)
-                    probs = policy(state)
-                    m = Categorical(probs)
-                    action = m.sample()
-                    next_state, reward, terminated, truncated, info = env.step(action.item())
+                    probs = self.network(state)
+                    action = probs.multinomial()
+                    next_state, reward, terminated, truncated, info = self.env.env.step(action.item())
                     done = terminated or truncated
 
                     log_probs.append(m.log_prob(action))

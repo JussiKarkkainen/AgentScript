@@ -38,7 +38,7 @@ class Network:
     def __call__(self, x):
         x = self.fc(x).relu()
         x = self.fc2(x)
-        return x.softmax(dim=1)
+        return x.softmax(axis=1)
 
 
 #DEFINE PYTHON
