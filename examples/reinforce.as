@@ -45,7 +45,6 @@ class Network:
         x = self.fc2(x)
         return x.softmax(axis=1)
 
-
 #DEFINE PYTHON
 def update(network, batch, config):
     def calc_qvals(rewards):
