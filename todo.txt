@@ -1,5 +1,14 @@
 ============================================================
-File: runner.py, Line: 21
+File: runner.py, Line: 23
+        self.network = network
+        
+        # TODO: Need to pass other params like: momentum, weight_decay, etc...
+        try:
+            OptimizerClass = optimizers[self.agent.config["optimizer"]["type"]]
+============================================================
+
+============================================================
+File: runner.py, Line: 49
 
     def train(self):
         # TODO: This is going to be DQN specific at first, to be fixed later
@@ -13,7 +22,7 @@ File: builder.py, Line: 9
 def builder(config: List[Dict[str, dict[str, Any]]], python: List[str]):
     # TODO: Validate the configuration, Use the validate_config() function in config_parser.py
     
-    
+    # Turns the string config values into the actual classes
 ============================================================
 
 ============================================================

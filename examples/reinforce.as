@@ -18,10 +18,11 @@ Agent:
     output_shape: 2  
     activation: relu
   discount_factor: 0.99
+  gamma: 0.99
   loss_function: NLLLoss
   training:
     episodes: 1000
-    batch_size: None
+    batch_size: 1
   optimizer:
     type: Adam
     learning_rate: 0.001
@@ -51,7 +52,7 @@ def update(network, batch, config):
         R = 0.0
         qvals = []
         for r in reversed(rewards):
-            R = r + gamma * R
+            R = r + config["gamma"] * R
             qvals.insert(0, R)
         return qvals
     
@@ -59,4 +60,4 @@ def update(network, batch, config):
     qvals = Tensor(qvals)
     qvals = (qvals - qvals.mean()) / (qvals.std() + 1e-5)
     policy_loss = sum([-log_prob * q for log_prob, q in zip(batch["log_probs"], qvals)])
-    return policy_loss
+    return policy_loss.realize()

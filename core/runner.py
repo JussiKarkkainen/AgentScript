@@ -6,6 +6,7 @@ from tinygrad.tensor import Tensor
 import tinygrad.nn as nn
 
 Transition = namedtuple("Transition", "state action reward next_state done")
+Episode = namedtuple("Episode", "rewards, log_probs")
 
 optimizers = {
     "Adam": nn.optim.Adam,
@@ -65,8 +66,9 @@ class Runner:
                     log_probs.append(probs[action].log())
                     rewards.append(reward)
                     state = next_state
-
-                self.replay_buffer.push((log_probs, rewards)) 
+                
+                episode = Episode(rewards=rewards, log_probs=log_probs)
+                self.replay_buffer.push(episode) 
                 self.update_fun()
                     
             elif not self.agent.config["on_policy"]:
