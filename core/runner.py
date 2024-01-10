@@ -40,15 +40,15 @@ class Runner:
             return
         if self.replay_buffer:
             batch = self.replay_buffer.sample(self.agent.config["training"]["batch_size"])
-        loss = self.agent.update(self.network, batch, self.agent.config)
         self.optimizer.zero_grad()
+        loss = self.agent.update(self.network, batch, self.agent.config)
         loss.backward()
         self.optimizer.step()
         return loss
 
     def train(self):
         # TODO: This is going to be DQN specific at first, to be fixed later
-        scores = deque(maxlen=100)
+        scores = []
         for episode in range(self.agent.config["training"]["episodes"]):
             state = self.env.init()
             episode_reward = 0
@@ -59,18 +59,47 @@ class Runner:
 
                 while not done:
                     probs = self.network(state)
-                    action = probs.multinomial()
-                    next_state, reward, terminated, truncated, info = self.env.env.step(action.item())
+                    action = probs.multinomial().item()
+                    next_state, reward, terminated, truncated, info = self.env.env.step(action)
                     done = terminated or truncated
-
-                    log_probs.append(probs[action].log())
+                    
+                    action_one_hot = np.zeros_like(probs.numpy())
+                    action_one_hot[action] = 1
+                    action_one_hot = Tensor(action_one_hot)
+                    selected_prob = (probs * action_one_hot).sum()
+                    log_prob = selected_prob.log()
+                    
+                    log_probs.append(log_prob)
                     rewards.append(reward)
                     state = next_state
                 
-                episode = Episode(rewards=rewards, log_probs=log_probs)
-                self.replay_buffer.push(episode) 
-                self.update_fun()
-                    
+                def calc_qvals(rewards):
+                    R = 0.0
+                    gamma = 0.99
+                    qvals = []
+                    for r in reversed(rewards):
+                        R = r + gamma * R
+                        qvals.insert(0, R)
+                    return qvals
+                
+                
+                self.optimizer.zero_grad()
+                qvals = calc_qvals(rewards)
+                qvals = Tensor(qvals)
+                qvals = (qvals - qvals.mean()) / (qvals.std() + 1e-5)
+                policy_loss = sum([-log_prob * q for log_prob, q in zip(log_probs, qvals)])
+                policy_loss.backward()
+                self.optimizer.step()
+                
+                episode_reward = sum(rewards)
+
+                """
+                episode_batch = Episode(rewards=rewards, log_probs=log_probs)
+                self.replay_buffer.push(episode_batch) 
+                loss = self.update_fun()
+                """
+            
+
             elif not self.agent.config["on_policy"]:
                 for t in range(self.agent.config["training"]["max_time_steps"]):
                     epsilon = self.agent.config["exploration"]["epsilon_end"] + (self.agent.config["exploration"]["epsilon_start"] \
@@ -98,14 +127,14 @@ class Runner:
                     if done:
                         break
 
-                scores.append(episode_reward)
-                mean_score = np.mean(scores)
+            scores.append(episode_reward)
+            mean_score = np.mean(scores)
 
-                print(f"Episode: {episode}, Total Reward: {episode_reward}, Mean reward {mean_score}")
+            print(f"Episode: {episode}, Total Reward: {episode_reward}, Mean reward {mean_score}")
 
-                if mean_score >= 300:
-                    print("Environment solved in {} episodes!".format(episode))
-                    break
+            if mean_score >= 300:
+                print("Environment solved in {} episodes!".format(episode))
+                break
 
 
     def execute(self):

@@ -12,5 +12,5 @@ class NeuralNetwork:
 
     def __call__(self, x):
         if type(x) != Tensor:
-            x = Tensor(x)
+            x = Tensor(x, requires_grad=False)
         return self.network_class(x)

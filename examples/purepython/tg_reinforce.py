@@ -61,10 +61,11 @@ def reinforce():
     qvals = calc_qvals(rewards)
     qvals = Tensor(qvals, requires_grad=False)
     qvals = (qvals - qvals.mean()) / (qvals.std() + 1e-5)
+    
     # Policy gradient update
     optimizer.zero_grad()
     policy_loss = [-log_prob * q for log_prob, q in zip(log_probs, qvals)]
-    policy_loss = sum(policy_loss).squeeze()
+    policy_loss = sum(policy_loss)
     policy_loss.backward()
     optimizer.step()
     return policy_loss, sum(rewards)

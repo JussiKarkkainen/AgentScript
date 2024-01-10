@@ -34,16 +34,13 @@ Agent:
 #DEFINE PYTHON
 class Network:
     def __init__(self, config):
-        input_size = config['network']['input_shape']
-        for hidden_size in config["network"]["hidden_layers"]:
-            self.fc = nn.Linear(input_size, hidden_size)
-            input_size = hidden_size
-        self.fc2 = nn.Linear(input_size, config["network"]["output_shape"])
+        self.fc = nn.Linear(4, 128)
+        self.fc2 = nn.Linear(128, 2)
 
     def __call__(self, x):
         x = self.fc(x).relu()
         x = self.fc2(x)
-        return x.softmax(axis=1)
+        return x.softmax().realize()
 
 #DEFINE PYTHON
 def update(network, batch, config):
@@ -59,4 +56,4 @@ def update(network, batch, config):
     qvals = Tensor(qvals)
     qvals = (qvals - qvals.mean()) / (qvals.std() + 1e-5)
     policy_loss = sum([-log_prob * q for log_prob, q in zip(batch["log_probs"], qvals)])
-    return policy_loss.realize()
+    return policy_loss
