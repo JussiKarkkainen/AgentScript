@@ -42,10 +42,17 @@ def reinforce():
     while not done:
         state = Tensor(state, requires_grad=False)
         probs = policy(state)
-        action = np.random.multinomial()
-        next_state, reward, terminated, truncated, info = env.step(action.item())
+        
+        action = probs.multinomial().item()
+        action_one_hot = np.zeros_like(probs.numpy())
+        action_one_hot[action] = 1
+        action_one_hot = Tensor(action_one_hot)
+        selected_prob = (probs * action_one_hot).sum()
+        log_prob = selected_prob.log()
+        
+        next_state, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
-        log_probs.append(probs[action].log())
+        log_probs.append(log_prob)
         rewards.append(reward)
 
         state = next_state
@@ -54,11 +61,10 @@ def reinforce():
     qvals = calc_qvals(rewards)
     qvals = Tensor(qvals, requires_grad=False)
     qvals = (qvals - qvals.mean()) / (qvals.std() + 1e-5)
-
     # Policy gradient update
     optimizer.zero_grad()
     policy_loss = [-log_prob * q for log_prob, q in zip(log_probs, qvals)]
-    policy_loss = sum(policy_loss)
+    policy_loss = sum(policy_loss).squeeze()
     policy_loss.backward()
     optimizer.step()
     return policy_loss, sum(rewards)
@@ -68,7 +74,7 @@ num_episodes = 500
 for episode in range(num_episodes):
     loss, reward = reinforce()
     if episode % 50 == 0:
-        print(f"Episode {episode}, Loss {loss}, Rewards {reward}")
+        print(f"Episode {episode}, Loss {loss.numpy()}, Rewards {reward}")
 
 env.close()
 
