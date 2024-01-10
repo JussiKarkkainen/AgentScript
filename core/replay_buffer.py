@@ -9,13 +9,17 @@ class ReplayBuffer:
         if not self.config["episodic"]:
             self.buffer = deque(maxlen=self.config["capacity"])
         else:
-            self.buffer = []
+            self.episode = None
 
     def push(self, transition):
-        self.buffer.append(transition)
+        if not self.config["episodic"]:
+            self.buffer.append(transition)
+        else:
+            self.episode = transition
 
     def sample(self, batch_size):
-        sampled_transitions = random.sample(self.buffer, batch_size)
+        if not self.config["episodic"]:
+            sampled_transitions = random.sample(self.buffer, batch_size)
         if not self.config["episodic"]:
             batch = {
                 'states': Tensor([t.state for t in sampled_transitions]),
@@ -27,12 +31,12 @@ class ReplayBuffer:
             return batch
         
         batch = {
-            'rewards': sampled_transitions[0].rewards,
-            'log_probs': sampled_transitions[0].log_probs
+            'rewards': self.episode.rewards,
+            'log_probs': self.episode.log_probs
         }
 
         return batch
     
     def __len__(self):
-        return len(self.buffer)
+        return len(self.buffer) if not self.config["episodic"] else 1
 

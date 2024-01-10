@@ -73,32 +73,11 @@ class Runner:
                     rewards.append(reward)
                     state = next_state
                 
-                def calc_qvals(rewards):
-                    R = 0.0
-                    gamma = 0.99
-                    qvals = []
-                    for r in reversed(rewards):
-                        R = r + gamma * R
-                        qvals.insert(0, R)
-                    return qvals
-                
-                
-                self.optimizer.zero_grad()
-                qvals = calc_qvals(rewards)
-                qvals = Tensor(qvals)
-                qvals = (qvals - qvals.mean()) / (qvals.std() + 1e-5)
-                policy_loss = sum([-log_prob * q for log_prob, q in zip(log_probs, qvals)])
-                policy_loss.backward()
-                self.optimizer.step()
-                
-                episode_reward = sum(rewards)
-
-                """
                 episode_batch = Episode(rewards=rewards, log_probs=log_probs)
-                self.replay_buffer.push(episode_batch) 
+                self.replay_buffer.push(episode_batch)
                 loss = self.update_fun()
-                """
-            
+
+                episode_reward = sum(rewards)
 
             elif not self.agent.config["on_policy"]:
                 for t in range(self.agent.config["training"]["max_time_steps"]):
