@@ -62,21 +62,30 @@ def train():
             action = action_prob.sample()
             
             next_state, reward, done, _ = env.step(action.item())
-
-            # Calculate advantage and critic loss
-            # advantage = ...
-            # critic_loss = ...
-
-            # Update actor and critic
-            # actor_optimizer.zero_grad()
-            # actor_loss.backward()
-            # actor_optimizer.step()
-
-            # critic_optimizer.zero_grad()
-            # critic_loss.backward()
-            # critic_optimizer.step()
-
+            
+            if done:
+                new_state_val = torch.tensor([0]).float().unsqueeze(0).to(DEVICE)
+            
+            val_loss = F.mse_loss(reward + gamma * new_state_val, state_val)
+            val_loss *= I
+            
+            advantage = reward + gamma * new_state_val.item() - state_val.item()
+            policy_loss = -lp * advantage
+            policy_loss *= I
+            
+            policy_optimizer.zero_grad()
+            policy_loss.backward()
+            policy_optimizer.step()
+            
+            stateval_optimizer.zero_grad()
+            val_loss.backward()
+            stateval_optimizer.step()
+            
+            if done:
+                break
+            
             state = next_state
+            I *= gamma
 
 if __name__ == "__main__":
     train()
