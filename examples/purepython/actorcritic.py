@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -53,7 +53,7 @@ critic_optimizer = optim.Adam(critic.parameters(), lr=learning_rate)
 # Training loop (skeleton)
 def train():
     for episode in range(1000):  # Number of episodes
-        state = env.reset()
+        state, info = env.reset()
         done = False
 
         while not done:
