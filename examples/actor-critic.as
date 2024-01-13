@@ -58,6 +58,17 @@ class Critic(nn.Module):
 
 #DEFINE PYTHON
 def update(network, batch, config):
-    pass
+    action_prob = actor(state)
+    action = action_prob.multinomial()
+    
+    state_val = critic(state)
+
+    next_state_val = critic(next_state) if not done else torch.tensor([0]).float()
+    advantage = reward + gamma * next_state_val - state_val
+
+    actor_loss = -action_prob.log_prob(action) * advantage
+    critic_loss = F.mse_loss(reward + gamma * next_state_val, state_val)
+    return actor_loss, critic_loss
+
 
 
