@@ -16,7 +16,7 @@ Agent:
   on_policy: False
   network:
     input_shape: 4  
-    hidden_layers: [32, 64] 
+    hidden_layers: [128, 512] 
     output_shape: 2  
     activation: relu
   exploration:
@@ -58,7 +58,7 @@ def update(network, batch, config):
     curr_Q = network(states)
     curr_Q = curr_Q.gather(actions.unsqueeze(-1), 1).squeeze(-1)
     next_Q = network(next_states).max(1)[0]
-    expected_Q = rewards + (config["discount_factor"] * next_Q * (1 - dones))
-    loss = ((curr_Q - expected_Q.detach()) ** 2).mean()
+    expected_Q = rewards + config["discount_factor"] * next_Q * (1 - dones)
+    loss = ((curr_Q - expected_Q.detach()) ** 2).sum()
     return loss
 
