@@ -2,6 +2,7 @@ import gymnasium as gym
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 from torch.distributions import Categorical
 
 # Environment setup
@@ -50,42 +51,70 @@ critic = Critic()
 actor_optimizer = optim.Adam(actor.parameters(), lr=learning_rate)
 critic_optimizer = optim.Adam(critic.parameters(), lr=learning_rate)
 
-# Training loop (skeleton)
 def train():
     for episode in range(1000):  # Number of episodes
+        rewards = []
         state, info = env.reset()
+        state = torch.from_numpy(state).float().unsqueeze(0)
         done = False
+        I = 1
 
         while not done:
-            state = torch.from_numpy(state).float().unsqueeze(0)
             action_prob = actor(state)
             action = action_prob.sample()
             
-            next_state, reward, done, _ = env.step(action.item())
+            next_state, reward, terminated, truncated, _ = env.step(action.item())
+            done = terminated or truncated
             
-            if done:
-                new_state_val = torch.tensor([0]).float().unsqueeze(0).to(DEVICE)
+            next_state = torch.from_numpy(next_state).float().unsqueeze(0)       
+            reward = torch.tensor([reward]).float()
+            rewards.append(reward)
             
-            val_loss = F.mse_loss(reward + gamma * new_state_val, state_val)
-            val_loss *= I
-            
-            advantage = reward + gamma * new_state_val.item() - state_val.item()
-            policy_loss = -lp * advantage
-            policy_loss *= I
-            
-            policy_optimizer.zero_grad()
-            policy_loss.backward()
-            policy_optimizer.step()
-            
-            stateval_optimizer.zero_grad()
-            val_loss.backward()
-            stateval_optimizer.step()
-            
+            state_val = critic(state)
+            next_state_val = critic(next_state) if not done else torch.tensor([0]).float()
+            advantage = reward + gamma * next_state_val - state_val
+
+            actor_loss = -action_prob.log_prob(action) * advantage
+            critic_loss = F.mse_loss(reward + gamma * next_state_val, state_val)
+
+            actor_optimizer.zero_grad()
+            actor_loss.backward(retain_graph=True)
+            actor_optimizer.step()
+
+            # Update critic
+            critic_optimizer.zero_grad()
+            critic_loss.backward()
+            critic_optimizer.step()
+
+            # Move to the next state
+            state = next_state
+
             if done:
                 break
             
-            state = next_state
             I *= gamma
+
+        print(f"Rewards on episode: {episode} were {sum(rewards).item()}")
+        if sum(rewards).item() > 300:
+            test()
+
+
+def test():
+    testenv = gym.make('CartPole-v1', render_mode="human")
+    state, info = testenv.reset()
+    done = False
+    total_reward = 0
+
+    while not done:
+        state = torch.from_numpy(state).float().unsqueeze(0)
+        with torch.no_grad():
+            action_prob = actor(state)
+        action = action_prob.sample().item()
+
+        state, reward, terminated, truncated, _ = testenv.step(action)
+        done = terminated or truncated
+
+    testenv.close()
 
 if __name__ == "__main__":
     train()
