@@ -97,6 +97,7 @@ def train():
         print(f"Rewards on episode: {episode} were {sum(rewards).item()}")
         if sum(rewards).item() > 300:
             test()
+            exit()
 
 
 def test():
