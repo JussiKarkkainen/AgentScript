@@ -61,6 +61,7 @@ class Runner:
                 done = False
                 rewards = []
                 while not done:
+                    self.replay_buffer.push(state)
                     actor_loss, critic_loss, reward = self.update_fun()
                     rewards.append(reward)
 

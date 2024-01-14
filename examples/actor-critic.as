@@ -7,6 +7,7 @@ Environment:
 #DEFINE CONFIG
 ReplayBuffer:
     episodic: True    
+    type: ActorCritic
 
 #DEFINE CONFIG
 Agent:

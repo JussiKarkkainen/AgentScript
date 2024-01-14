@@ -29,13 +29,17 @@ class ReplayBuffer:
                 'dones': Tensor([t.done for t in sampled_transitions])
             }
             return batch
-        
-        batch = {
-            'rewards': self.episode.rewards,
-            'log_probs': self.episode.log_probs
-        }
-
-        return batch
+        if self.config["type"] == "ActorCritic":
+            batch = {
+                'state': self.episode
+            }
+            return batch
+        if self.config["type"] != "ActorCritic":
+            batch = {
+                'rewards': self.episode.rewards,
+                'log_probs': self.episode.log_probs
+            }
+            return batch
     
     def __len__(self):
         return len(self.buffer) if not self.config["episodic"] else 1
