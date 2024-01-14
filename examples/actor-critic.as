@@ -60,16 +60,15 @@ class Critic:
         return self.cl2(self.cl1(state).relu())
 
 #DEFINE PYTHON
-def update(network, batch, config):
+def update(networks, batch, config):
     action_prob = actor(state)
     action = action_prob.multinomial()
     
-    next_state, reward, terminated, truncated, _ = env.step(action.item())
+    next_state, reward, terminated, truncated, _ = environment.step(action.item())
     done = terminated or truncated
     
     next_state = Tensor(next_state).unsqueeze(0)       
     reward = Tensor([reward])
-    rewards.append(reward)
     
     state_val = critic(state)
     next_state_val = critic(next_state) if not done else Tensor([0.])
@@ -84,6 +83,4 @@ def update(network, batch, config):
     actor_loss = (-log_prob * advantage.detach()).sum()
     critic_loss = (((reward + gamma * next_state_val) - state_val) ** 2).squeeze()
     return actor_loss, critic_loss
-
-
 

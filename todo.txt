@@ -1,18 +1,18 @@
 ============================================================
-File: runner.py, Line: 23
-        self.network = network
-        
+File: runner.py, Line: 26
+
+    def create_optimizers(self):
         # TODO: Need to pass other params like: momentum, weight_decay, etc...
-        try:
-            OptimizerClass = optimizers[self.agent.config["optimizer"]["type"]]
+        optimizer_dict = {}
+        for network_name, network in self.network.networks.items():
 ============================================================
 
 ============================================================
-File: runner.py, Line: 49
+File: runner.py, Line: 55
 
     def train(self):
         # TODO: This is going to be DQN specific at first, to be fixed later
-        scores = deque(maxlen=100)
+        scores = []
         for episode in range(self.agent.config["training"]["episodes"]):
 ============================================================
 

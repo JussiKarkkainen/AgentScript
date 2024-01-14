@@ -57,6 +57,30 @@ class Runner:
         for episode in range(self.agent.config["training"]["episodes"]):
             state = self.env.init()
             episode_reward = 0
+            if self.agent.config["type"] == "ActorCritic":
+                done = False
+                rewards = []
+                while not done:
+                    actor_loss, critic_loss, reward = self.update_fun()
+                    rewards.append(reward)
+
+                    actor_optimizer.zero_grad()
+                    actor_loss.backward()
+                    actor_optimizer.step()
+                    
+                    critic_optimizer.zero_grad()
+                    critic_loss.backward()
+                    critic_optimizer.step()
+                    
+                    state = next_state
+
+                    if done:
+                        break
+                    
+                    I *= gamma
+
+                episode_reward = sum(rewards)
+
             if self.agent.config["on_policy"]:
                 log_probs = []
                 rewards = []
