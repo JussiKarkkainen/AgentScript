@@ -12,16 +12,18 @@ def builder(config: List[Dict[str, dict[str, Any]]], python: List[str]):
     modules = [(eval(list(conf.keys())[0]), list(conf.keys())[0], list(conf.values())[0]) for conf in config]
     # module[0] = module class, module[1] = module name, module[2] = module init params
     environment, replay_buffer, agent = None, None, None
+
     for module in modules:
         if module[1] == "Environment":
             environment = module[0](module[2])
         elif module[1] == "ReplayBuffer":
             replay_buffer = module[0](module[2])
         elif module[1] == "Agent":
-            agent = module[0](module[2], python[1])
+            network_components = len(list(module[2]["network"].keys())) # Number of NN classes
+            agent = module[0](module[2], python[network_components])
 
     # Neural Network definition
-    network = NeuralNetwork(python[0], module[2])
+    network = NeuralNetwork(python[0:network_components], module[2])
     
     return agent, environment, replay_buffer, network
 

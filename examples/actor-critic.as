@@ -13,10 +13,16 @@ Agent:
   type: REINFORCE
   on_policy: True
   network:
-    input_shape: 4  
-    hidden_layers: [128] 
-    output_shape: 2  
-    activation: relu
+    Actor:
+      input_shape: 4  
+      hidden_layers: [128] 
+      output_shape: 2  
+      activation: relu
+    Critic:
+      input_shape: 4
+      hidden_layers: [128]
+      output_shape: 1
+      activation: relu
   discount_factor: 0.99
   gamma: 0.99
   loss_function: MSELoss
@@ -32,7 +38,7 @@ Agent:
 
 #DEFINE PYTHON
 class Actor:
-    def __init__(self):
+    def __init__(self, config):
         self.al1 = nn.Linear(4, 128)
         self.al2 = nn.Linear(128, 2)
     
@@ -40,8 +46,9 @@ class Actor:
         x = self.al2(self.al1(state).relu())
         return x.softmax()
 
+#DEFINE PYTHON
 class Critic:
-    def __init__(self):
+    def __init__(self, config):
         self.cl1 = nn.Linear(4, 128)
         self.cl2 = nn.Linear(128, 1)
     
