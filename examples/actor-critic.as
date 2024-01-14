@@ -10,7 +10,9 @@ ReplayBuffer:
 
 #DEFINE CONFIG
 Agent:
-  type: REINFORCE
+  type: ActorCritic
+  discount_factor: 0.99
+  gamma: 0.99
   on_policy: True
   network:
     Actor:
@@ -23,15 +25,17 @@ Agent:
       hidden_layers: [128]
       output_shape: 1
       activation: relu
-  discount_factor: 0.99
-  gamma: 0.99
   loss_function: MSELoss
+  optimizer:
+    Actor: 
+      type: Adam
+      learning_rate: 0.001
+    Critic:
+      type: Adam
+      learning_rate: 0.001
   training:
     episodes: 1000
     batch_size: 1
-  optimizer:
-    type: Adam
-    learning_rate: 0.001
   meta:
     train: true
     weight_path: None

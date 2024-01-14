@@ -8,11 +8,10 @@ class NeuralNetwork:
             name = list(config["network"].keys())[i]
             local_scope = {}
             exec(python_def, globals(), local_scope)
-            print(config["network"][name])
             self.networks[name] = (local_scope[name](config["network"][name]))
 
-    def parameters(self):
-        return nn.state.get_parameters(self.network_class)
+    def parameters(self, network_name):
+        return nn.state.get_parameters(self.networks[network_name])
 
     def __call__(self, x):
         if type(x) != Tensor:

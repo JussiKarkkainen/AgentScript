@@ -20,14 +20,19 @@ class Runner:
         self.env = env
         self.replay_buffer = replay_buffer
         self.network = network
-        
-        # TODO: Need to pass other params like: momentum, weight_decay, etc...
-        try:
-            OptimizerClass = optimizers[self.agent.config["optimizer"]["type"]]
-            self.optimizer = OptimizerClass(self.network.parameters(), self.agent.config["optimizer"]["learning_rate"])
-        except KeyError:
-            raise NotImplementedError(f"The specified optimizer '{config['optimizer']}' is not available. Available optimizers: {', '.join(optimizers.keys())}")
+        self.optimizers = self.create_optimizers()
 
+    def create_optimizers(self):
+        # TODO: Need to pass other params like: momentum, weight_decay, etc...
+        optimizer_dict = {}
+        for network_name, network in self.network.networks.items():
+            try:
+                optimizer_config = self.agent.config["optimizer"][network_name]
+                OptimizerClass = optimizers[optimizer_config["type"]]
+                optimizer_dict[network_name] = OptimizerClass(self.network.parameters(network_name), optimizer_config["learning_rate"])
+            except KeyError as e:
+                raise NotImplementedError(f"The specified optimizer for {network_name} is not available. Error: {e}")
+        return optimizer_dict
 
     def load_weights(self):
         pass
