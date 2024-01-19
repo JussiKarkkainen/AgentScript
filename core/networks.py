@@ -13,7 +13,7 @@ class NeuralNetwork:
     def parameters(self, network_name):
         return nn.state.get_parameters(self.networks[network_name])
 
-    def __call__(self, x):
+    def __call__(self, name, x):
         if type(x) != Tensor:
             x = Tensor(x, requires_grad=False)
-        return self.network_class(x)
+        return self.networks[name](x)

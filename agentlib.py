@@ -7,7 +7,7 @@ import os
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        raise Exception("Incorrect number of arguments. Usage: python3 agentlib.py <config.al>")
+        raise Exception("Incorrect number of arguments. Usage: python3 agentlib.py <file>")
     config_file = sys.argv[1]
     with open(config_file, "r") as f:
         contents = f.read() 

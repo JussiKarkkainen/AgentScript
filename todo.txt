@@ -8,7 +8,16 @@ File: runner.py, Line: 26
 ============================================================
 
 ============================================================
-File: runner.py, Line: 55
+File: runner.py, Line: 52
+        losses, reward = self.agent.update(self.network, batch, self.agent.config, self.env)
+        for loss, optim in zip(losses, self.optimizers.values()):
+            # TODO: This assumes the losses are returned in the same order as the optimizers are defined, this shoudn't matter
+            loss.backward()
+            optim.step()
+============================================================
+
+============================================================
+File: runner.py, Line: 58
 
     def train(self):
         # TODO: This is going to be DQN specific at first, to be fixed later
@@ -41,24 +50,6 @@ class LSTMCell:
         # TODO: These weights can be unified, which requires fewer matmuls, find out how it's equivelant to this
         weights = lambda: (Tensor.uniform(input_size, hidden_size),
                            Tensor.uniform(hidden_size, hidden_size),
-============================================================
-
-============================================================
-File: environment.py, Line: 10
-
-def preprocess(observation: np.ndarray) -> np.ndarray:
-    # TODO: Where should preprocessing be done?
-    # TODO: Remove hardcoding from preprocessing
-    resized = cv2.resize(observation, (64, 64), interpolation=cv2.INTER_AREA)
-============================================================
-
-============================================================
-File: environment.py, Line: 11
-def preprocess(observation: np.ndarray) -> np.ndarray:
-    # TODO: Where should preprocessing be done?
-    # TODO: Remove hardcoding from preprocessing
-    resized = cv2.resize(observation, (64, 64), interpolation=cv2.INTER_AREA)
-    return resized
 ============================================================
 
 ============================================================
