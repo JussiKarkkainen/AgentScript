@@ -57,7 +57,6 @@ def train():
         state, info = env.reset()
         state = torch.from_numpy(state).float().unsqueeze(0)
         done = False
-        I = 1
 
         while not done:
             action_prob = actor(state)
@@ -92,7 +91,6 @@ def train():
             if done:
                 break
             
-            I *= gamma
 
         print(f"Rewards on episode: {episode} were {sum(rewards).item()}")
         if sum(rewards).item() > 300:

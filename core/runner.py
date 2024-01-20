@@ -43,16 +43,14 @@ class Runner:
     def update_fun(self):
         if self.replay_buffer and len(self.replay_buffer) < self.agent.config["training"]["batch_size"]:
             return
-        if self.replay_buffer:
-            batch = self.replay_buffer.sample(self.agent.config["training"]["batch_size"])
         for optim in self.optimizers.values():
             optim.zero_grad()
-        losses, reward = self.agent.update(self.network, batch, self.agent.config, self.env)
+        losses, meta = self.agent.update(self.network, self.replay_buffer, self.agent.config, self.env)
         for loss, optim in zip(losses, self.optimizers.values()):
             # TODO: This assumes the losses are returned in the same order as the optimizers are defined, this shoudn't matter
             loss.backward()
             optim.step()
-        return losses, reward
+        return losses, meta
 
     def train(self):
         # TODO: This is going to be DQN specific at first, to be fixed later
@@ -63,20 +61,18 @@ class Runner:
             if self.agent.config["type"] == "ActorCritic":
                 done = False
                 rewards = []
+                self.replay_buffer.push(state)
                 while not done:
-                    self.replay_buffer.push(state)
-                    (actor_loss, critic_loss), reward = self.update_fun()
-                    rewards.append(reward)
+                    (actor_loss, critic_loss), (reward, done) = self.update_fun()
+                    rewards.append(reward.numpy())
 
-                    state = next_state
                     if done:
                         break
                     
-                    I *= gamma
 
                 episode_reward = sum(rewards)
 
-            if self.agent.config["on_policy"]:
+            if self.agent.config["on_policy"] and not self.agent.config["type"] == "ActorCritic":
                 log_probs = []
                 rewards = []
                 done = False

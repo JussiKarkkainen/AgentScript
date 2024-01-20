@@ -61,14 +61,16 @@ class Critic:
         return self.cl2(self.cl1(state).relu())
 
 #DEFINE PYTHON
-def update(networks, batch, config, environment=None):
+def update(networks, replay_buffer, config, environment=None):
     #TODO: Don't love this syntax
+    batch = replay_buffer.sample(config["training"]["batch_size"])
     action_prob = networks("Actor", batch["state"])
     action = action_prob.multinomial()
     next_state, reward, terminated, truncated, _ = environment.step(action.item())
     done = terminated or truncated
     
     next_state = Tensor(next_state).unsqueeze(0)       
+    replay_buffer.push(next_state)
     reward = Tensor([reward])
     
     state_val = networks("Critic", batch["state"])
@@ -83,5 +85,5 @@ def update(networks, batch, config, environment=None):
    
     actor_loss = (-log_prob * advantage.detach()).sum()
     critic_loss = (((reward + config["gamma"] * next_state_val) - state_val) ** 2).squeeze()
-    return (actor_loss, critic_loss), reward
+    return (actor_loss, critic_loss), (reward, done)
 
