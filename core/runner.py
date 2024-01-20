@@ -139,15 +139,5 @@ class Runner:
     def execute(self):
         if self.agent.config["meta"]["train"] == True:
             self.train()
-            self.save_weights()
-            exit()
-        self.load_weights()
-        raise Exception("execute")
-        terminate = None
-        while no_terminate() and not terminate:
-            action = self.act(obs)
-            obs, reward, terminate = self.environment.step(action)
-        
-        self.environment.shutdown()
-        exit()
+            return True
 
