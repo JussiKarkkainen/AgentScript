@@ -17,13 +17,5 @@ def config_parser(config_str: str) -> Tuple[List[Dict[str, Dict[str, str]]], Lis
 
 
 def validate_config(config_dict: Dict[str, List[str]]) -> bool:
-    for key in config_dict.keys():
-        if key == "environment":
-            pass
-        elif key == "replay_buffer":
-            pass
-        elif key == "agent":
-            pass
-        else:
-            return
-
+    #TODO: This function basically defines the syntax, if this doesn't raise an exception, the config is valid
+    pass

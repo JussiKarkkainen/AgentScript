@@ -17,39 +17,12 @@ File: runner.py, Line: 50
 ============================================================
 
 ============================================================
-File: runner.py, Line: 56
-
-    def train(self):
-        # TODO: This is going to be DQN specific at first, to be fixed later
-        scores = []
-        for episode in range(self.agent.config["training"]["episodes"]):
-============================================================
-
-============================================================
-File: builder.py, Line: 9
+File: builder.py, Line: 10
 
 def builder(config: List[Dict[str, dict[str, Any]]], python: List[str]):
     # TODO: Validate the configuration, Use the validate_config() function in config_parser.py
-    
-    # Turns the string config values into the actual classes
-============================================================
+    parser.validate_config(config)
 
-============================================================
-File: nn_models.py, Line: 91
-        means, variances, mixture_coef = self.mdn(lstm_out[0])
-
-        # TODO: Implement correct sampling for MDN
-        return mdn_out[0]
-
-============================================================
-
-============================================================
-File: nn_models.py, Line: 96
-class LSTMCell:
-    def __init__(self, input_size, hidden_size):
-        # TODO: These weights can be unified, which requires fewer matmuls, find out how it's equivelant to this
-        weights = lambda: (Tensor.uniform(input_size, hidden_size),
-                           Tensor.uniform(hidden_size, hidden_size),
 ============================================================
 
 ============================================================
