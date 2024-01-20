@@ -41,4 +41,17 @@ def test_actorcritic():
     except:
         raise Exception
     
+
+def test_ppo():
+    with open("tests/test_files/ppo.as", "r") as f:
+        contents = f.read() 
+        config, python = config_parser(contents)
     
+    agent, env, replay_buffer, network = builder(config, python)
+    runner = Runner(agent, env, replay_buffer, network)
+    try:
+        result = runner.execute()
+        assert result == True
+    except:
+        raise Exception
+

@@ -59,5 +59,5 @@ def update(network, replay_buffer, config, environment=None):
     qvals = calc_qvals(batch["rewards"])
     qvals = Tensor(qvals)
     qvals = (qvals - qvals.mean()) / (qvals.std() + 1e-5)
-    policy_loss = sum([-log_prob * q for log_prob, q in zip(batch["log_probs"], qvals)])
+    policy_loss = sum([-log_prob * q for log_prob, q in zip(batch["log_probs_list"], qvals)])
     return policy_loss, None

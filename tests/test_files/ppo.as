@@ -32,7 +32,7 @@ Agent:
       type: Adam
       learning_rate: 0.001
   training:
-    episodes: 1000
+    episodes: 5
     batch_size: 1
   meta:
     train: true

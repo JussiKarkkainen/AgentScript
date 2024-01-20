@@ -6,7 +6,7 @@ from tinygrad.tensor import Tensor
 import tinygrad.nn as nn
 
 Transition = namedtuple("Transition", "state action reward next_state done")
-Episode = namedtuple("Episode", "states actions rewards log_probs")
+Episode = namedtuple("Episode", "states actions rewards log_probs_tens log_probs_list")
 
 optimizers = {
     "Adam": nn.optim.Adam,
@@ -70,7 +70,8 @@ class Runner:
     def episodic_update(self, state):
         rewards = []
         done = False
-        states, actions, rewards, log_probs = [], [], [], []
+        #TODO: reinforce need list, ppo needs tens, to be fixed
+        states, actions, rewards, log_probs_tens, log_probs_list = [], [], [], [], []
         while not done:
             probs = self.network("Policy", state)
             action = probs.multinomial().item()
@@ -86,11 +87,12 @@ class Runner:
             states.append(state)
             actions.append(action)
             rewards.append(reward)
-            log_probs.append(log_prob)
+            log_probs_tens.append(log_prob.item())
+            log_probs_list.append(log_prob)
 
             state = next_state
         
-        episode_batch = Episode(states=states, actions=actions, rewards=rewards, log_probs=log_probs)
+        episode_batch = Episode(states=states, actions=actions, rewards=rewards, log_probs_tens=log_probs_tens, log_probs_list=log_probs_list)
         self.replay_buffer.push(episode_batch)
         loss = self.update_fun()
 
