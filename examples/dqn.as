@@ -14,7 +14,7 @@ ReplayBuffer:
 #DEFINE CONFIG
 Agent:
   type: DQN
-  on_policy: False
+  update_freq: Batch
   networks:
     DQN:
       input_shape: 4  

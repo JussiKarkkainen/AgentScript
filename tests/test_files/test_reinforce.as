@@ -12,7 +12,7 @@ ReplayBuffer:
 #DEFINE CONFIG
 Agent:
   type: REINFORCE
-  on_policy: True
+  update_freq: Episodic
   networks:
     Policy:
       input_shape: 4  

@@ -14,7 +14,7 @@ Agent:
   type: ActorCritic
   discount_factor: 0.99
   gamma: 0.99
-  on_policy: True
+  update_freq: Timestep
   networks:
     Actor:
       input_shape: 4  

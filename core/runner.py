@@ -52,79 +52,91 @@ class Runner:
             optim.step()
         return losses, meta
 
+    def timestep_update(self, state):
+        done = False
+        rewards = []
+        self.replay_buffer.push(state)
+        while not done:
+            (actor_loss, critic_loss), (reward, done) = self.update_fun()
+            rewards.append(reward.numpy())
+
+            if done:
+                break
+            
+
+        episode_reward = sum(rewards)
+        return episode_reward
+
+    def episodic_update(self, state):
+        log_probs = []
+        rewards = []
+        done = False
+
+        while not done:
+            probs = self.network("Policy", state)
+            action = probs.multinomial().item()
+            next_state, reward, terminated, truncated, info = self.env.env.step(action)
+            done = terminated or truncated
+            
+            action_one_hot = np.zeros_like(probs.numpy())
+            action_one_hot[action] = 1
+            action_one_hot = Tensor(action_one_hot)
+            selected_prob = (probs * action_one_hot).sum()
+            log_prob = selected_prob.log()
+            
+            log_probs.append(log_prob)
+            rewards.append(reward)
+            state = next_state
+        
+        episode_batch = Episode(rewards=rewards, log_probs=log_probs)
+        self.replay_buffer.push(episode_batch)
+        loss = self.update_fun()
+
+        episode_reward = sum(rewards)
+        return episode_reward
+
+    def batch_update(self, state, episode):
+        rewards = []
+        for t in range(self.agent.config["training"]["max_time_steps"]):
+            epsilon = self.agent.config["exploration"]["epsilon_end"] + (self.agent.config["exploration"]["epsilon_start"] \
+                    - self.agent.config["exploration"]["epsilon_end"]) * math.exp(-1. * episode / self.agent.config["exploration"]["epsilon_decay"])
+            if random.random() > epsilon:
+                action = self.network("DQN", state)
+                action = int(action.argmax(0).numpy())
+            else:
+                action = self.env.env.action_space.sample()
+
+            # Execute action in the environment
+            next_state, reward, terminated, truncated, _ = self.env.env.step(action)
+            done = terminated or truncated
+
+            # Store the transition in replay buffer
+            transition = Transition(state=state, action=action, reward=reward, next_state=next_state, done=done)
+            self.replay_buffer.push(transition)
+
+            state = next_state
+            rewards.append(reward)
+
+            # Update the network
+            self.update_fun()
+
+            if done:
+                break
+        episode_reward = sum(rewards)
+        return episode_reward
+
     def train(self):
-        # TODO: This is going to be DQN specific at first, to be fixed later
         scores = []
         for episode in range(self.agent.config["training"]["episodes"]):
             state = self.env.init()
             episode_reward = 0
-            if self.agent.config["type"] == "ActorCritic":
-                done = False
-                rewards = []
-                self.replay_buffer.push(state)
-                while not done:
-                    (actor_loss, critic_loss), (reward, done) = self.update_fun()
-                    rewards.append(reward.numpy())
 
-                    if done:
-                        break
-                    
-
-                episode_reward = sum(rewards)
-
-            if self.agent.config["on_policy"] and not self.agent.config["type"] == "ActorCritic":
-                log_probs = []
-                rewards = []
-                done = False
-
-                while not done:
-                    probs = self.network("Policy", state)
-                    action = probs.multinomial().item()
-                    next_state, reward, terminated, truncated, info = self.env.env.step(action)
-                    done = terminated or truncated
-                    
-                    action_one_hot = np.zeros_like(probs.numpy())
-                    action_one_hot[action] = 1
-                    action_one_hot = Tensor(action_one_hot)
-                    selected_prob = (probs * action_one_hot).sum()
-                    log_prob = selected_prob.log()
-                    
-                    log_probs.append(log_prob)
-                    rewards.append(reward)
-                    state = next_state
-                
-                episode_batch = Episode(rewards=rewards, log_probs=log_probs)
-                self.replay_buffer.push(episode_batch)
-                loss = self.update_fun()
-
-                episode_reward = sum(rewards)
-
-            elif not self.agent.config["on_policy"]:
-                for t in range(self.agent.config["training"]["max_time_steps"]):
-                    epsilon = self.agent.config["exploration"]["epsilon_end"] + (self.agent.config["exploration"]["epsilon_start"] \
-                            - self.agent.config["exploration"]["epsilon_end"]) * math.exp(-1. * episode / self.agent.config["exploration"]["epsilon_decay"])
-                    if random.random() > epsilon:
-                        action = self.network("DQN", state)
-                        action = int(action.argmax(0).numpy())
-                    else:
-                        action = self.env.env.action_space.sample()
-
-                    # Execute action in the environment
-                    next_state, reward, terminated, truncated, _ = self.env.env.step(action)
-                    done = terminated or truncated
-
-                    # Store the transition in replay buffer
-                    transition = Transition(state=state, action=action, reward=reward, next_state=next_state, done=done)
-                    self.replay_buffer.push(transition)
-
-                    state = next_state
-                    episode_reward += reward
-
-                    # Update the network
-                    self.update_fun()
-
-                    if done:
-                        break
+            if self.agent.config["update_freq"] == "Timestep":
+                episode_reward = self.timestep_update(state)
+            elif self.agent.config["update_freq"] == "Episodic":
+                episode_reward = self.episodic_update(state)
+            elif self.agent.config["update_freq"] == "Batch":
+                episode_reward = self.batch_update(state, episode)
 
             scores.append(episode_reward)
             mean_score = np.mean(scores)
