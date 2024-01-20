@@ -8,8 +8,8 @@ File: runner.py, Line: 26
 ============================================================
 
 ============================================================
-File: runner.py, Line: 52
-        losses, reward = self.agent.update(self.network, batch, self.agent.config, self.env)
+File: runner.py, Line: 50
+        losses, meta = self.agent.update(self.network, self.replay_buffer, self.agent.config, self.env)
         for loss, optim in zip(losses, self.optimizers.values()):
             # TODO: This assumes the losses are returned in the same order as the optimizers are defined, this shoudn't matter
             loss.backward()
@@ -17,7 +17,7 @@ File: runner.py, Line: 52
 ============================================================
 
 ============================================================
-File: runner.py, Line: 58
+File: runner.py, Line: 56
 
     def train(self):
         # TODO: This is going to be DQN specific at first, to be fixed later
@@ -50,15 +50,6 @@ class LSTMCell:
         # TODO: These weights can be unified, which requires fewer matmuls, find out how it's equivelant to this
         weights = lambda: (Tensor.uniform(input_size, hidden_size),
                            Tensor.uniform(hidden_size, hidden_size),
-============================================================
-
-============================================================
-File: perception.py, Line: 10
-
-def load_dataset(path: str, num_episodes: int, num_frames: int) -> np.ndarray:
-    # TODO: The input resolution is hardcoded for CarRacing example, fix this
-    data = np.zeros((num_episodes, num_frames, 64, 64, 3), dtype=np.uint8)
-    files = [os.path.join(os.getcwd()+"/tests/datasets/vision", file) for file in os.listdir(path)]
 ============================================================
 
 ============================================================
