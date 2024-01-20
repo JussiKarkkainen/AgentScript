@@ -3,7 +3,7 @@ import gymnasium as gym
 import numpy as np
 from tinygrad.tensor import Tensor
 
-implemented_envs = {"gym": ["CarRacing-v2", "CartPole-v1", "Pendulum-v1"]}
+implemented_envs = {"gym": ["CarRacing-v2", "CartPole-v1", "Pendulum-v1", "LunarLander-v2"]}
 
 class Environment:
     def __init__(self, config: Dict[str, Any]):

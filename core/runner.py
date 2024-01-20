@@ -71,7 +71,7 @@ class Runner:
         log_probs = []
         rewards = []
         done = False
-
+        states, actions, rewards, log_probs_old = [], [], [], []
         while not done:
             probs = self.network("Policy", state)
             action = probs.multinomial().item()
