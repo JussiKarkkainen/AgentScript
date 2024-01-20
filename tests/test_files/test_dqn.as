@@ -14,7 +14,7 @@ ReplayBuffer:
 Agent:
   type: DQN
   on_policy: False
-  network:
+  networks:
     input_shape: 4  
     hidden_layers: [128, 512] 
     output_shape: 2  

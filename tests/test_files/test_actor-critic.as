@@ -15,7 +15,7 @@ Agent:
   discount_factor: 0.99
   gamma: 0.99
   on_policy: True
-  network:
+  networks:
     Actor:
       input_shape: 4  
       hidden_layers: [128] 

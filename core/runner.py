@@ -78,7 +78,7 @@ class Runner:
                 done = False
 
                 while not done:
-                    probs = self.network(state)
+                    probs = self.network("Policy", state)
                     action = probs.multinomial().item()
                     next_state, reward, terminated, truncated, info = self.env.env.step(action)
                     done = terminated or truncated

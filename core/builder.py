@@ -19,7 +19,7 @@ def builder(config: List[Dict[str, dict[str, Any]]], python: List[str]):
         elif module[1] == "ReplayBuffer":
             replay_buffer = module[0](module[2])
         elif module[1] == "Agent":
-            network_components = len(list(module[2]["network"].keys())) # Number of NN classes
+            network_components = len(list(module[2]["networks"].keys())) # Number of NN classes
             agent = module[0](module[2], python[network_components])
 
     # Neural Network definition

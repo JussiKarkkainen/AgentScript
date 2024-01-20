@@ -7,16 +7,18 @@ Environment:
 #DEFINE CONFIG
 ReplayBuffer:
     episodic: True    
+    type: REINFORCE
 
 #DEFINE CONFIG
 Agent:
   type: REINFORCE
   on_policy: True
-  network:
-    input_shape: 4  
-    hidden_layers: [128] 
-    output_shape: 2  
-    activation: relu
+  networks:
+    Policy:
+      input_shape: 4  
+      hidden_layers: [128] 
+      output_shape: 2  
+      activation: relu
   discount_factor: 0.99
   gamma: 0.99
   loss_function: NLLLoss
@@ -24,15 +26,16 @@ Agent:
     episodes: 5
     batch_size: 1
   optimizer:
-    type: Adam
-    learning_rate: 0.001
+    Policy:
+      type: Adam
+      learning_rate: 0.001
   meta:
     train: true
     weight_path: None
 
 
 #DEFINE PYTHON
-class Network:
+class Policy:
     def __init__(self, config):
         self.fc = nn.Linear(4, 128)
         self.fc2 = nn.Linear(128, 2)
@@ -43,7 +46,7 @@ class Network:
         return x.softmax().realize()
 
 #DEFINE PYTHON
-def update(network, batch, config):
+def update(network, replay_buffer, config, environment=None):
     def calc_qvals(rewards):
         R = 0.0
         qvals = []
@@ -52,8 +55,9 @@ def update(network, batch, config):
             qvals.insert(0, R)
         return qvals
     
+    batch = replay_buffer.sample(config["training"]["batch_size"])
     qvals = calc_qvals(batch["rewards"])
     qvals = Tensor(qvals)
     qvals = (qvals - qvals.mean()) / (qvals.std() + 1e-5)
     policy_loss = sum([-log_prob * q for log_prob, q in zip(batch["log_probs"], qvals)])
-    return policy_loss
+    return policy_loss, None
