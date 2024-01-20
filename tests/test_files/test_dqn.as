@@ -8,7 +8,7 @@ Environment:
 ReplayBuffer:
   capacity: 10000
   batch_size: 64
-  episodic: False
+  update_freq: Batch
   type: DQN
 
 #DEFINE CONFIG

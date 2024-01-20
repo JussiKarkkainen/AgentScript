@@ -6,7 +6,7 @@ Environment:
 
 #DEFINE CONFIG
 ReplayBuffer:
-    episodic: True    
+    update_freq: Timestep
     type: ActorCritic
 
 #DEFINE CONFIG

@@ -2,10 +2,11 @@
 Environment:
   name: CartPole-v1
   horizon: 1000
+  preprocess: False
 
 #DEFINE CONFIG
 ReplayBuffer:
-    episodic: True    
+    update_freq: Episodic 
     type: PPO
 
 #DEFINE CONFIG
@@ -33,13 +34,14 @@ Agent:
   training:
     episodes: 1000
     batch_size: 1
+    policy_epochs: 5
   meta:
     train: true
     weight_path: None
 
 #DEFINE PYTHON
 class Policy:
-    def __init__(self, n_states, n_actions):
+    def __init__(self, config):
         self.l1 = nn.Linear(4, 64)
         self.o = nn.Linear(64, 2)
 
@@ -48,7 +50,7 @@ class Policy:
 
 #DEFINE PYTHON
 class Value:
-    def __init__(self, n_states):
+    def __init__(self, config):
         self.l1 = nn.Linear(4, 64)
         self.o = nn.Linear(64, 1)
 
@@ -64,13 +66,15 @@ def update(networks, replay_buffer, config, environment=None):
             R = r + gamma * R
             returns.insert(0, R)
         return returns
-    for _ in range(policy_epochs):
-        log_probs_new = (policy_net(states)).log()
-            
-        log_probs_new = log_probs_new.gather(actions.unsqueeze(1), 1)
-        state_values = value_net(states).squeeze(1)
 
-        ratios = (log_probs_new - log_probs_old).exp()
+    batch = replay_buffer.sample(config["training"]["batch_size"])
+    for _ in range(config["training"]["policy_epochs"]):
+        log_probs_new = networks("Policy", batch["states"]).log()
+            
+        log_probs_new = log_probs_new.gather(batch["actions"].unsqueeze(1), 1)
+        state_values = networks("Value", batch["states"]).squeeze(1)
+
+        ratios = (log_probs_new - batch["log_probs_old"]).exp()
 
         surr1 = ratios * advantages
         surr2 = Tensor.minimum(Tensor.maximum(ratios, 1-epsilon), 1+epsilon) * advantages
