@@ -104,7 +104,7 @@ class Runner:
                     epsilon = self.agent.config["exploration"]["epsilon_end"] + (self.agent.config["exploration"]["epsilon_start"] \
                             - self.agent.config["exploration"]["epsilon_end"]) * math.exp(-1. * episode / self.agent.config["exploration"]["epsilon_decay"])
                     if random.random() > epsilon:
-                        action = self.network(state)
+                        action = self.network("DQN", state)
                         action = int(action.argmax(0).numpy())
                     else:
                         action = self.env.env.action_space.sample()
