@@ -2,11 +2,8 @@ from typing import Dict, Any, Tuple, List
 import utils
 from core.environment import Environment
 from core.replay_buffer import ReplayBuffer
-from core.perception import Perception
-from core.world_model import WorldModel
 from tinygrad.tensor import Tensor
 import tinygrad.nn as nn
-from core.actor import Actor
 import numpy as np
 
 
