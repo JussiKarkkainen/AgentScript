@@ -34,7 +34,6 @@ Agent:
   training:
     episodes: 1000
     batch_size: 1
-    policy_epochs: 5
   meta:
     train: true
     weight_path: None
@@ -68,19 +67,18 @@ def update(networks, replay_buffer, config, environment=None):
         return returns
 
     batch = replay_buffer.sample(config["training"]["batch_size"])
-    for _ in range(config["training"]["policy_epochs"]):
-        log_probs_new = networks("Policy", batch["states"]).log()
-            
-        log_probs_new = log_probs_new.gather(batch["actions"].unsqueeze(1), 1)
-        state_values = networks("Value", batch["states"]).squeeze(1)
+    log_probs_new = networks("Policy", batch["states"]).log()
+        
+    log_probs_new = log_probs_new.gather(batch["actions"].unsqueeze(1), 1)
+    state_values = networks("Value", batch["states"]).squeeze(1)
 
-        ratios = (log_probs_new - batch["log_probs_old"]).exp()
+    ratios = (log_probs_new - batch["log_probs"]).exp()
 
-        surr1 = ratios * advantages
-        surr2 = Tensor.minimum(Tensor.maximum(ratios, 1-epsilon), 1+epsilon) * advantages
-        policy_loss = -Tensor.min(surr1, surr2).mean()
+    surr1 = ratios * advantages
+    surr2 = Tensor.minimum(Tensor.maximum(ratios, 1-epsilon), 1+epsilon) * advantages
+    policy_loss = -Tensor.min(surr1, surr2).mean()
 
-        value_loss = (returns - state_values).pow(2).mean()
+    value_loss = (returns - state_values).pow(2).mean()
 
     return (policy_loss, value_loss), None
 

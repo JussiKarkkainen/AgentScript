@@ -45,7 +45,7 @@ def validate_agent_config(env_config):
     pass
 
 def validate_config(config_dict: Dict[str, List[str]]):
-    #TODO: This function basically defines the syntax, if this doesn't raise an exception, the config is valid
+    #NOTE: This function basically defines the syntax, if this doesn't raise an exception, the config is valid
     assert len(config_dict) == 3, "You must have configurations for 'Environment', 'ReplayBuffer' and 'Agent', other configurations as invalid"
     try:
         env_config = config_dict[0]["Environment"]

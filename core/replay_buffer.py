@@ -26,8 +26,8 @@ class ReplayBuffer:
             return batch
         elif self.config["update_freq"] == "Episodic":
             batch = {
-                'states': self.episode.states,
-                'actions': self.episode.actions,
+                'states': Tensor(self.episode.states),
+                'actions': Tensor(self.episode.actions),
                 'rewards': self.episode.rewards,
                 'log_probs': self.episode.log_probs
             }
