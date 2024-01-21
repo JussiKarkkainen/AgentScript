@@ -11,9 +11,9 @@ if __name__ == "__main__":
     config_file = sys.argv[1]
     with open(config_file, "r") as f:
         contents = f.read() 
-        config, python = config_parser(contents)
+        config, nn, python = config_parser(contents)
     
-    agent, env, replay_buffer, network = builder(config, python)
+    agent, env, replay_buffer, network = builder(config, nn, python)
     runner = Runner(agent, env, replay_buffer, network)
     result = runner.execute()
 

@@ -34,7 +34,7 @@ Agent:
     weight_path: None
 
 
-#DEFINE PYTHON
+#DEFINE NN
 class Policy:
     def __init__(self, config):
         self.fc = nn.Linear(4, 128)
@@ -46,17 +46,18 @@ class Policy:
         return x.softmax().realize()
 
 #DEFINE PYTHON
+def calc_qvals(rewards, config):
+    R = 0.0
+    qvals = []
+    for r in reversed(rewards):
+        R = r + config["gamma"] * R
+        qvals.insert(0, R)
+    return qvals
+
+#DEFINE PYTHON
 def update(network, replay_buffer, config, environment=None):
-    def calc_qvals(rewards):
-        R = 0.0
-        qvals = []
-        for r in reversed(rewards):
-            R = r + config["gamma"] * R
-            qvals.insert(0, R)
-        return qvals
-    
     batch = replay_buffer.sample(config["training"]["batch_size"])
-    qvals = calc_qvals(batch["rewards"])
+    qvals = calc_qvals(batch["rewards"], config)
     qvals = Tensor(qvals)
     qvals = (qvals - qvals.mean()) / (qvals.std() + 1e-5)
     policy_loss = sum([-log_prob * q for log_prob, q in zip(batch["log_probs_list"], qvals)])

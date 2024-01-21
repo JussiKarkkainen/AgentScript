@@ -11,10 +11,11 @@ def json_config_parser(config: str) -> Dict:
 def config_parser(config_str: str) -> Tuple[List[Dict[str, Dict[str, str]]], List[str]]:
     sections = config_str.split("#DEFINE") 
     sections = [section.strip() for section in sections if section.strip()]
-    python_sections = [section[len("PYTHON"):].strip() for section in sections if section.startswith("PYTHON")]
     config_sections = [section[len("CONFIG"):].strip() for section in sections if section.startswith("CONFIG")]
+    nn_sections = [section[len("NN"):].strip() for section in sections if section.startswith("NN")]
+    python_sections = [section[len("PYTHON"):].strip() for section in sections if section.startswith("PYTHON")]
     parsed_config_sections = [yaml.safe_load(section) for section in config_sections]
-    return parsed_config_sections, python_sections
+    return parsed_config_sections, nn_sections, python_sections
 
 
 def validate_env_config(env_config):

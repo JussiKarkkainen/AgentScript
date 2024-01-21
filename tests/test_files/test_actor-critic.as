@@ -41,7 +41,7 @@ Agent:
     train: true
     weight_path: None
 
-#DEFINE PYTHON
+#DEFINE NN
 class Actor:
     def __init__(self, config):
         self.al1 = nn.Linear(4, 128)
@@ -51,7 +51,7 @@ class Actor:
         x = self.al2(self.al1(state).relu())
         return x.softmax()
 
-#DEFINE PYTHON
+#DEFINE NN
 class Critic:
     def __init__(self, config):
         self.cl1 = nn.Linear(4, 128)

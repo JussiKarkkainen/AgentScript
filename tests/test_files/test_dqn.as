@@ -39,7 +39,7 @@ Agent:
     train: true
     weight_path: None
 
-#DEFINE PYTHON
+#DEFINE NN
 class DQN:
     def __init__(self, config):
         self.layers = []

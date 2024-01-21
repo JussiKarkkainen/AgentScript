@@ -34,18 +34,12 @@ class Runner:
                 raise NotImplementedError(f"The specified optimizer for {network_name} is not available. Error: {e}")
         return optimizer_dict
 
-    def load_weights(self):
-        pass
-    
-    def save_weights(self):
-        pass
-
     def update_fun(self):
         if self.replay_buffer and len(self.replay_buffer) < self.agent.config["training"]["batch_size"]:
             return
         for optim in self.optimizers.values():
             optim.zero_grad()
-        losses, meta = self.agent.update(self.network, self.replay_buffer, self.agent.config, self.env)
+        losses, meta = self.agent.update_funcs["update"](self.network, self.replay_buffer, self.agent.config, self.env)
         for loss, optim in zip(losses, self.optimizers.values()):
             # TODO: This assumes the losses are returned in the same order as the optimizers are defined, this shoudn't matter
             loss.backward()
@@ -110,18 +104,15 @@ class Runner:
             else:
                 action = self.env.env.action_space.sample()
 
-            # Execute action in the environment
             next_state, reward, terminated, truncated, _ = self.env.env.step(action)
             done = terminated or truncated
 
-            # Store the transition in replay buffer
             transition = Transition(state=state, action=action, reward=reward, next_state=next_state, done=done)
             self.replay_buffer.push(transition)
 
             state = next_state
             rewards.append(reward)
 
-            # Update the network
             self.update_fun()
 
             if done:

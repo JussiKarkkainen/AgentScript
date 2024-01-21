@@ -10,8 +10,8 @@ import numpy as np
 class Agent:
     def __init__(self, config: Dict[str, Dict[str, Any]], python_update):
         self.config = config
-        local_scope = {}
-        exec(python_update, globals(), local_scope)
-        self.update = local_scope['update'] 
-        
+        update_def = '\n'.join(python_update)
+        namespace = {"Tensor": Tensor, "np": np}
+        exec(update_def, namespace)
+        self.update_funcs = namespace
 

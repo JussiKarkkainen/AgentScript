@@ -14,6 +14,7 @@ Agent:
   type: PPO
   discount_factor: 0.99
   epsilon: 0.2
+  gamma: 0.99
   update_freq: Episodic
   networks:
     Policy:
@@ -38,7 +39,7 @@ Agent:
     train: true
     weight_path: None
 
-#DEFINE PYTHON
+#DEFINE NN
 class Policy:
     def __init__(self, config):
         self.l1 = nn.Linear(4, 64)
@@ -47,7 +48,7 @@ class Policy:
     def __call__(self, state):
         return self.o(self.l1(state).relu()).softmax()
 
-#DEFINE PYTHON
+#DEFINE NN
 class Value:
     def __init__(self, config):
         self.l1 = nn.Linear(4, 64)
@@ -57,18 +58,20 @@ class Value:
         return self.o(self.l1(state).relu())
 
 #DEFINE PYTHON
+def compute_returns(rewards, config):
+    returns = []
+    R = 0
+    for r in reversed(rewards):
+        R = r + config["gamma"] * R
+        returns.insert(0, R)
+    return returns
+
+#DEFINE PYTHON
 def update(networks, replay_buffer, config, environment=None):
-    def compute_returns(rewards, gamma=0.99):
-        returns = []
-        R = 0
-        for r in reversed(rewards):
-            R = r + gamma * R
-            returns.insert(0, R)
-        return returns
     
     batch = replay_buffer.sample(config["training"]["batch_size"])
     
-    returns = Tensor(compute_returns(batch["rewards"]))
+    returns = Tensor(compute_returns(batch["rewards"], config))
     state_values = networks("Value", batch["states"]).squeeze(1).detach()
     advantages = returns - state_values
     advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-10)

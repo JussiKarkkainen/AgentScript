@@ -6,7 +6,7 @@ from core.replay_buffer import ReplayBuffer
 from core.agent import Agent
 from core.networks import NeuralNetwork
 
-def builder(config: List[Dict[str, dict[str, Any]]], python: List[str]):
+def builder(config: List[Dict[str, dict[str, Any]]], nn: List[str], python: List[str]):
     # TODO: Validate the configuration, Use the validate_config() function in config_parser.py
     parser.validate_config(config)
 
@@ -21,11 +21,10 @@ def builder(config: List[Dict[str, dict[str, Any]]], python: List[str]):
         elif module[1] == "ReplayBuffer":
             replay_buffer = module[0](module[2])
         elif module[1] == "Agent":
-            network_components = len(list(module[2]["networks"].keys())) # Number of NN classes
-            agent = module[0](module[2], python[network_components])
+            agent = module[0](module[2], python)
 
     # Neural Network definition
-    network = NeuralNetwork(python[0:network_components], module[2])
+    network = NeuralNetwork(nn, module[2])
     
     return agent, environment, replay_buffer, network
 
