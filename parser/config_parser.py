@@ -17,7 +17,6 @@ def config_parser(config_str: str) -> Tuple[List[Dict[str, Dict[str, str]]], Lis
     parsed_config_sections = [yaml.safe_load(section) for section in config_sections]
     return parsed_config_sections, nn_sections, python_sections
 
-
 def validate_env_config(env_config):
     for key, value in env_config.items():
         assert key == "name" or key == "horizon" or key == "preprocess"
@@ -43,7 +42,9 @@ def validate_replay_buffer_config(env_config):
 
 def validate_agent_config(env_config):
     # TODO: This will change so much that its not worth implementing now
-    pass
+    assert env_config["networks"] is not None, "You must define one or more Neural Networks"
+    assert len(list(env_config["networks"])) != 0, "You must define one or more Neural Networks"
+    assert type(env_config["type"]) == str, f"Name of algorithm must be string, not {type(env_config['type'])}"
 
 def validate_config(config_dict: Dict[str, List[str]]):
     #NOTE: This function basically defines the syntax, if this doesn't raise an exception, the config is valid

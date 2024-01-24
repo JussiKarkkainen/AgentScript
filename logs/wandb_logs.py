@@ -11,7 +11,6 @@ class WandbLogger:
         wandb.init(
             project=project_name,
 
-            # track hyperparameters and run metadata
             config={
             "learning_rate": lr,
             "architecture": self.architecture,

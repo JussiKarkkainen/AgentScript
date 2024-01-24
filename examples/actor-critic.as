@@ -17,15 +17,7 @@ Agent:
   update_freq: Timestep
   networks:
     Actor:
-      input_shape: 4  
-      hidden_layers: [128] 
-      output_shape: 2  
-      activation: relu
     Critic:
-      input_shape: 4
-      hidden_layers: [128]
-      output_shape: 1
-      activation: relu
   loss_function: MSELoss
   optimizer:
     Actor: 

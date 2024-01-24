@@ -1,20 +1,20 @@
 #DEFINE CONFIG
 Environment:
-  name: CartPole-v1
+  name: Pendulum-v1
   horizon: 1000
   preprocess: False
 
 #DEFINE CONFIG
 ReplayBuffer:
-    update_freq: Timestep
-    type: ActorCritic
+    update_freq: Batch
+    type: SAC
 
 #DEFINE CONFIG
 Agent:
-  type: ActorCritic
+  type: SAC
   discount_factor: 0.99
   gamma: 0.99
-  update_freq: Timestep
+  update_freq: Batch
   networks:
     Actor:
       input_shape: 4  
@@ -68,7 +68,30 @@ class Critic(nn.Module):
         return value
 
 #DEFINE PYTHON
+def soft_update(target, source, tau):
+    for target_param, param in zip(target.parameters(), source.parameters()):
+        target_param.data.copy_(target_param.data * (1.0 - tau) + param.data * tau)
+
+
+#DEFINE PYTHON
 def update(networks, replay_buffer, config, environment=None):
-    pass
+    state, next_state, action, reward, done = replay_buffer.sample(config["batch_size"])
+    # Is there tinygrad equivelant
+    with torch.no_grad():
+        next_action = actor(next_state)
+        next_state_action_values1 = critic1_target(next_state, next_action)
+        next_state_action_values2 = critic2_target(next_state, next_action)
+        next_state_action_values = torch.min(next_state_action_values1, next_state_action_values2)
+        target_Q = reward + (1 - done) * gamma * next_state_action_values
+        critic1_loss = nn.MSELoss()(critic1(state, action), target_Q)
+    
+    critic1_loss = nn.MSELoss()(critic1(state, action), target_Q)
+
+    critic2_loss = nn.MSELoss()(critic2(state, action), target_Q)
+
+    actor_loss = -torch.mean(critic1(state, actor(state)))
+
+    soft_update(critic1_target, critic1, tau)
+    soft_update(critic2_target, critic2, tau)
 
 
