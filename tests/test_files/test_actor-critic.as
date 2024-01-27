@@ -39,7 +39,10 @@ Agent:
     batch_size: 1
   meta:
     train: true
-    weight_path: None
+    weight_path: False
+  logs:
+    logging: False
+
 
 #DEFINE NN
 class Actor:

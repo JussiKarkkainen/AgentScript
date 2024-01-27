@@ -33,7 +33,9 @@ Agent:
   meta:
     train: True
     weight_path: "weights/dqn"
-  logs: [exploration, discount_factor, training, optimizer]
+  logs: 
+    logging: False
+    config: [exploration, discount_factor, training, optimizer]
 
 #DEFINE NN
 class DQN:

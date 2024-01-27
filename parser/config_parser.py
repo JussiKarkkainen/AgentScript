@@ -45,6 +45,9 @@ def validate_agent_config(env_config):
     assert env_config["networks"] is not None, "You must define one or more Neural Networks"
     assert len(list(env_config["networks"])) != 0, "You must define one or more Neural Networks"
     assert type(env_config["type"]) == str, f"Name of algorithm must be string, not {type(env_config['type'])}"
+    assert "logs" in env_config.keys()
+    if env_config["logs"]["logging"] == True:
+        assert "config" in env_config["logs"].keys() and type(env_config["logs"]["logging"]) == list
 
 def validate_config(config_dict: Dict[str, List[str]]):
     #NOTE: This function basically defines the syntax, if this doesn't raise an exception, the config is valid

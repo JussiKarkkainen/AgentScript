@@ -23,7 +23,7 @@ class Runner:
         self.replay_buffer = replay_buffer
         self.network = network
         self.optimizers = self.create_optimizers()
-        self.logger = WandbLogger(self.agent.config)
+        self.logger = WandbLogger(self.agent.config) if self.agent.config["logs"]["logging"] else None
 
     def create_optimizers(self):
         # TODO: Need to pass other params like: momentum, weight_decay, etc...
@@ -125,7 +125,7 @@ class Runner:
         episode_reward = sum(rewards)
         return episode_reward
 
-    def train(self, log=None):
+    def train(self):
         scores = []
         for episode in range(1, self.agent.config["training"]["episodes"]):
             state = self.env.init()
@@ -139,7 +139,7 @@ class Runner:
                 episode_reward = self.batch_update(state, episode)
 
             scores.append(episode_reward)
-            if log:
+            if self.logger:
                 self.logger.log({"Episode_reward": episode_reward})
             mean_score = np.mean(scores)
 
@@ -152,13 +152,13 @@ class Runner:
 
     def execute(self):
         if self.agent.config["meta"]["train"] == True:
-            if self.agent.config["logs"]:
+            if self.logger:
                 with self.logger:
-                    self.train(log=True)
+                    self.train()
             else:
                 self.train()
         
-        if self.agent.config["meta"]["weight_path"] is not None:
+        if self.agent.config["meta"]["weight_path"]:
             for name, network in self.network.networks.items():
                 path = os.path.join(os.getcwd(), self.agent.config["meta"]["weight_path"], name) 
                 if not os.path.exists(path):
