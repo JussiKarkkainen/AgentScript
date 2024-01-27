@@ -2,8 +2,8 @@ from core.builder import builder
 from core.runner import Runner
 from parser.config_parser import *
 
-def test_dqn():
-    with open("tests/test_files/test_dqn.as", "r") as f:
+def run_test(test_file: str):
+    with open(test_file, "r") as f:
         contents = f.read() 
         config, nn, python = config_parser(contents)
     
@@ -14,44 +14,16 @@ def test_dqn():
         assert result == True
     except:
         raise Exception
+
+def test_dqn():
+    run_test("tests/test_files/test_dqn.as")
 
 def test_reinforce():
-    with open("tests/test_files/test_reinforce.as", "r") as f:
-        contents = f.read() 
-        config, nn, python = config_parser(contents)
-    
-    agent, env, replay_buffer, network = builder(config, nn, python)
-    runner = Runner(agent, env, replay_buffer, network)
-    try:
-        result = runner.execute()
-        assert result == True
-    except:
-        raise Exception
+    run_test("tests/test_files/test_reinforce.as")
 
 def test_actorcritic():
-    with open("tests/test_files/test_actor-critic.as", "r") as f:
-        contents = f.read() 
-        config, nn, python = config_parser(contents)
+    run_test("tests/test_files/test_actor-critic.as")
     
-    agent, env, replay_buffer, network = builder(config, nn, python)
-    runner = Runner(agent, env, replay_buffer, network)
-    try:
-        result = runner.execute()
-        assert result == True
-    except:
-        raise Exception
-    
-
 def test_ppo():
-    with open("tests/test_files/test_ppo.as", "r") as f:
-        contents = f.read() 
-        config, nn, python = config_parser(contents)
-    
-    agent, env, replay_buffer, network = builder(config, nn, python)
-    runner = Runner(agent, env, replay_buffer, network)
-    try:
-        result = runner.execute()
-        assert result == True
-    except:
-        raise Exception
+    run_test("tests/test_files/test_ppo.as")
 
