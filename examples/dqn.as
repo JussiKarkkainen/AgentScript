@@ -17,18 +17,13 @@ Agent:
   update_freq: Batch
   networks:
     DQN:
-      input_shape: 4  
-      hidden_layers: [128, 512] 
-      output_shape: 2  
-      activation: relu
   exploration:
     epsilon_start: 1.0
     epsilon_end: 0.01
     epsilon_decay: 200
   discount_factor: 0.99
-  loss_function: MSELoss
   training:
-    episodes: 1000
+    episodes: 200
     max_time_steps: 10000
     batch_size: 32
   optimizer:
@@ -36,8 +31,9 @@ Agent:
       type: Adam
       learning_rate: 0.001
   meta:
-    train: true
+    train: True
     weight_path: "weights/dqn"
+  logs: [exploration, discount_factor, training, optimizer]
 
 #DEFINE NN
 class DQN:

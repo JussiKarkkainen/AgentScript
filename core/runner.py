@@ -5,6 +5,7 @@ import math
 from collections import deque, namedtuple
 from tinygrad.tensor import Tensor
 import tinygrad.nn as nn
+from logs.wandb_logs import WandbLogger
 
 Transition = namedtuple("Transition", "state action reward next_state done")
 Episode = namedtuple("Episode", "states actions rewards log_probs_tens log_probs_list")
@@ -22,6 +23,7 @@ class Runner:
         self.replay_buffer = replay_buffer
         self.network = network
         self.optimizers = self.create_optimizers()
+        self.logger = WandbLogger(self.agent.config)
 
     def create_optimizers(self):
         # TODO: Need to pass other params like: momentum, weight_decay, etc...
@@ -123,7 +125,7 @@ class Runner:
         episode_reward = sum(rewards)
         return episode_reward
 
-    def train(self):
+    def train(self, log=None):
         scores = []
         for episode in range(1, self.agent.config["training"]["episodes"]):
             state = self.env.init()
@@ -137,6 +139,8 @@ class Runner:
                 episode_reward = self.batch_update(state, episode)
 
             scores.append(episode_reward)
+            if log:
+                self.logger.log({"Episode_reward": episode_reward})
             mean_score = np.mean(scores)
 
             print(f"Episode: {episode}, Total Reward: {episode_reward}, Mean reward {mean_score}")
@@ -148,7 +152,11 @@ class Runner:
 
     def execute(self):
         if self.agent.config["meta"]["train"] == True:
-            self.train()
+            if self.agent.config["logs"]:
+                with self.logger:
+                    self.train(log=True)
+            else:
+                self.train()
         
         if self.agent.config["meta"]["weight_path"] is not None:
             for name, network in self.network.networks.items():
