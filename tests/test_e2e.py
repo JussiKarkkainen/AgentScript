@@ -1,8 +1,10 @@
 from core.builder import builder
 from core.runner import Runner
 from parser.config_parser import *
+import os
 
 def run_test(test_file: str):
+    os.environ["CPU"] = "1" # reinforce doesn't work on metal for some reason
     with open(test_file, "r") as f:
         contents = f.read() 
         config, nn, python = config_parser(contents)

@@ -40,7 +40,7 @@ class Runner:
         for optim in self.optimizers.values():
             optim.zero_grad()
         losses, meta = self.agent.update_funcs["update"](self.network, self.replay_buffer, self.agent.config, self.env)
-        losses = [losses]
+        losses = [losses] if type(losses) != tuple else losses
         for loss, optim in zip(losses, self.optimizers.values()):
             # TODO: This assumes the losses are returned in the same order as the optimizers are defined, this shoudn't matter
             loss.backward()
