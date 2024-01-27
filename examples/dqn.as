@@ -37,7 +37,7 @@ Agent:
       learning_rate: 0.001
   meta:
     train: true
-    weight_path: None
+    weight_path: "weights/dqn"
 
 #DEFINE NN
 class DQN:

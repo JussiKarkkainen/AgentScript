@@ -1,5 +1,6 @@
 tests/datasets/
 *.swp
+weights/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

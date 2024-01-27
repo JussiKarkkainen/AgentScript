@@ -1,4 +1,5 @@
 import random
+import os
 import numpy as np
 import math
 from collections import deque, namedtuple
@@ -148,5 +149,12 @@ class Runner:
     def execute(self):
         if self.agent.config["meta"]["train"] == True:
             self.train()
-            return True
-
+        
+        if self.agent.config["meta"]["weight_path"] is not None:
+            for name, network in self.network.networks.items():
+                path = os.path.join(os.getcwd(), self.agent.config["meta"]["weight_path"], name) 
+                if not os.path.exists(path):
+                    os.mkdir(path)
+                nn.state.safe_save(nn.state.get_state_dict(network), path+".safetensors")
+        
+        return True
