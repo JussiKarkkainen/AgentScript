@@ -16,16 +16,11 @@ Agent:
   gamma: 0.99
   update_freq: Batch
   networks:
-    Actor:
-      input_shape: 4  
-      hidden_layers: [128] 
-      output_shape: 2  
-      activation: relu
-    Critic:
-      input_shape: 4
-      hidden_layers: [128]
-      output_shape: 1
-      activation: relu
+    Actor
+    critic1
+    critic2
+    critic1_target
+    critic2_target
   loss_function: MSELoss
   optimizer:
     Actor: 
@@ -76,22 +71,24 @@ def soft_update(target, source, tau):
 #DEFINE PYTHON
 def update(networks, replay_buffer, config, environment=None):
     state, next_state, action, reward, done = replay_buffer.sample(config["batch_size"])
-    # Is there tinygrad equivelant
-    with torch.no_grad():
-        next_action = actor(next_state)
-        next_state_action_values1 = critic1_target(next_state, next_action)
-        next_state_action_values2 = critic2_target(next_state, next_action)
-        next_state_action_values = torch.min(next_state_action_values1, next_state_action_values2)
-        target_Q = reward + (1 - done) * gamma * next_state_action_values
-        critic1_loss = nn.MSELoss()(critic1(state, action), target_Q)
+
+    # with no_grad() equivelant
+    Tensor.no_grad = True
+    next_action = networks("Actor", next_state)
+    next_state_action_values1 = networks("critic1_target", (next_state, next_action))
+    next_state_action_values2 = networks("critic2_target", (next_state, next_action))
+    next_state_action_values = Tensor.minimum(next_state_action_values1, next_state_action_values2)
+    target_Q = reward + (1 - done) * gamma * next_state_action_values
+    critic1_loss = (networks("critic1", (state, action)) - target_Q) ** 2
+    Tensor.no_grad = False
     
-    critic1_loss = nn.MSELoss()(critic1(state, action), target_Q)
+    critic1_loss = (neteorks("critic1", (state, action)) - target_Q) ** 2
 
-    critic2_loss = nn.MSELoss()(critic2(state, action), target_Q)
+    critic2_loss = (networks("critic2", (state, action)) - target_Q) ** 2
 
-    actor_loss = -torch.mean(critic1(state, actor(state)))
+    actor_loss = -networks("critic1", (state, networks("Actor", (state)))).mean()
 
-    soft_update(critic1_target, critic1, tau)
-    soft_update(critic2_target, critic2, tau)
+    soft_update(networks["critic1_target"], networks["critic1"], config["tau"])
+    soft_update(networks["critic2_target"], networks["critic2"], config["tau"])
 
 
