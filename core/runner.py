@@ -61,7 +61,6 @@ class Runner:
             if done:
                 break
             
-
         episode_reward = sum(rewards)
         return episode_reward
 
@@ -98,16 +97,24 @@ class Runner:
         return episode_reward
 
     def batch_update(self, state, episode):
+        
+        def action_selection(state):
+            try: 
+                epsilon = self.agent.config["exploration"]["epsilon_end"] + (self.agent.config["exploration"]["epsilon_start"] \
+                        - self.agent.config["exploration"]["epsilon_end"]) * math.exp(-1. * episode / self.agent.config["exploration"]["epsilon_decay"])
+                if random.random() > epsilon:
+                    action = self.network("DQN", state)
+                    action = action.argmax(0).item()
+                else:
+                    action = self.env.env.action_space.sample()
+            except KeyError:
+                action = self.network("Actor", state)
+                action = action.maximum()
+            return action
+
         rewards = []
         for t in range(self.agent.config["training"]["max_time_steps"]):
-            epsilon = self.agent.config["exploration"]["epsilon_end"] + (self.agent.config["exploration"]["epsilon_start"] \
-                    - self.agent.config["exploration"]["epsilon_end"]) * math.exp(-1. * episode / self.agent.config["exploration"]["epsilon_decay"])
-            if random.random() > epsilon:
-                action = self.network("DQN", state)
-                action = action.argmax(0).item()
-            else:
-                action = self.env.env.action_space.sample()
-
+            action = action_selection(state)
             next_state, reward, terminated, truncated, _ = self.env.env.step(action)
             done = terminated or truncated
 
@@ -148,8 +155,7 @@ class Runner:
             if mean_score >= 300:
                 print("Environment solved in {} episodes!".format(episode))
                 break
-
-
+    
     def execute(self):
         if self.agent.config["meta"]["train"] == True:
             self.train()

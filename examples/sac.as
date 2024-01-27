@@ -8,6 +8,8 @@ Environment:
 ReplayBuffer:
     update_freq: Batch
     type: SAC
+    capacity: 10000
+    batch_size: 32
 
 #DEFINE CONFIG
 Agent:
@@ -16,32 +18,37 @@ Agent:
   gamma: 0.99
   update_freq: Batch
   networks:
-    Actor
-    critic1
-    critic2
-    critic1_target
-    critic2_target
-  loss_function: MSELoss
+    Actor:
+    critic1:
+    critic2:
+    critic1_target:
+    critic2_target:
   optimizer:
     Actor: 
       type: Adam
       learning_rate: 0.001
-    Critic:
+    critic1:
+      type: Adam
+      learning_rate: 0.001
+    critic2:
       type: Adam
       learning_rate: 0.001
   training:
     episodes: 1000
-    batch_size: 1
+    max_time_steps: 10000
+    batch_size: 32
   meta:
     train: true
     weight_path: None
+  logs:
+    logging: False
 
-#DEFINE PYTHON
-class Actor(nn.Module):
-    def __init__(self, state_dim, action_dim, hidden_dim=256):
-        self.fc1 = nn.Linear(state_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
-        self.fc3 = nn.Linear(hidden_dim, action_dim)
+#DEFINE NN
+class Actor:
+    def __init__(self, config):
+        self.fc1 = nn.Linear(config["state_dim"], config["hidden_dim"])
+        self.fc2 = nn.Linear(config["hidden_dim"], config["hidden_dim"])
+        self.fc3 = nn.Linear(config["hidden_dim"], config["action_dim"])
 
     def forward(self, state):
         x = self.fc1(state).relu()
@@ -49,15 +56,15 @@ class Actor(nn.Module):
         action = self.fc3(x).tanh()
         return action
 
-#DEFINE PYTHON
-class Critic(nn.Module):
-    def __init__(self, state_dim, action_dim, hidden_dim=256):
-        self.fc1 = nn.Linear(state_dim + action_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
-        self.fc3 = nn.Linear(hidden_dim, 1)
+#DEFINE NN
+class Critic:
+    def __init__(self, config):
+        self.fc1 = nn.Linear(config["state_dim"] + config["action_dim"], config["hidden_dim"])
+        self.fc2 = nn.Linear(config["hidden_dim"], config["hidden_dim"])
+        self.fc3 = nn.Linear(config["hidden_dim"], 1)
 
     def forward(self, state, action):
-        x = self.fc1([state, action].cat(), 1)).relu()
+        x = self.fc1([state, action].cat(), 1).relu()
         x = self.fc2(x).relu()
         value = self.fc3(x)
         return value
@@ -82,7 +89,7 @@ def update(networks, replay_buffer, config, environment=None):
     critic1_loss = (networks("critic1", (state, action)) - target_Q) ** 2
     Tensor.no_grad = False
     
-    critic1_loss = (neteorks("critic1", (state, action)) - target_Q) ** 2
+    critic1_loss = (networks("critic1", (state, action)) - target_Q) ** 2
 
     critic2_loss = (networks("critic2", (state, action)) - target_Q) ** 2
 
