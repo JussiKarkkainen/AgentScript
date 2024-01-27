@@ -5,6 +5,12 @@ class WandbLogger:
         self.user_config = config
         self.wandb_config = self.create_wandb_config()
     
+        wandb.init(
+            project=self.user_config["type"],
+
+            config=self.wandb_config
+        )
+
     def create_wandb_config(self):
         def extract_numerics(source_dict, target_dict):
             for key, value in source_dict.items():
@@ -26,13 +32,8 @@ class WandbLogger:
     def log(self, logs):
         wandb.log(logs)
 
-    def __enter__(self):
-        wandb.init(
-            project=self.user_config["type"],
-
-            config=self.wandb_config
-        )
     
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def finish(self):
         wandb.finish()
+
 

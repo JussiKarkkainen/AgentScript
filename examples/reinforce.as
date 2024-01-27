@@ -32,7 +32,8 @@ Agent:
   meta:
     train: true
     weight_path: None
-
+  logs:
+    logging: False
 
 #DEFINE NN
 class Policy:

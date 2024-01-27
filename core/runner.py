@@ -152,12 +152,10 @@ class Runner:
 
     def execute(self):
         if self.agent.config["meta"]["train"] == True:
+            self.train()
             if self.logger:
-                with self.logger:
-                    self.train()
-            else:
-                self.train()
-        
+                self.logger.finish()
+
         if self.agent.config["meta"]["weight_path"]:
             for name, network in self.network.networks.items():
                 path = os.path.join(os.getcwd(), self.agent.config["meta"]["weight_path"], name) 
