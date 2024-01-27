@@ -42,17 +42,14 @@ Agent:
 #DEFINE NN
 class DQN:
     def __init__(self, config):
-        self.layers = []
-        input_size = config['input_shape']
-        for hidden_size in config['hidden_layers']:
-            self.layers.append(nn.Linear(input_size, hidden_size))
-            input_size = hidden_size
-        self.output = nn.Linear(input_size, config['output_shape'])
+        self.fc1 = nn.Linear(4, 128)
+        self.fc2 = nn.Linear(128, 512)
+        self.fc3 = nn.Linear(512, 2)
 
     def __call__(self, x):
-        for layer in self.layers:
-            x = layer(x).relu()
-        return self.output(x)
+        x = self.fc1(x).relu()
+        x = self.fc2(x).relu()
+        return self.fc3(x)
 
 #DEFINE PYTHON
 def update(networks, replay_buffer, config, env=None):
@@ -60,8 +57,8 @@ def update(networks, replay_buffer, config, env=None):
     states, actions, rewards, next_states, dones = batch['states'], batch['actions'], batch['rewards'], batch['next_states'], batch['dones']
     curr_Q = networks("DQN", states)
     curr_Q = curr_Q.gather(actions.unsqueeze(-1), 1).squeeze(-1)
-    next_Q = networks("DQN", next_states).max(1)[0]
+    next_Q = networks("DQN", next_states).max(1)
     expected_Q = rewards + config["discount_factor"] * next_Q * (1 - dones)
-    loss = ((curr_Q - expected_Q.detach()) ** 2).sum()
+    loss = Tensor.mean((curr_Q - expected_Q.detach()) ** 2)
     return loss, None
 

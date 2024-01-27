@@ -40,6 +40,7 @@ class Runner:
         for optim in self.optimizers.values():
             optim.zero_grad()
         losses, meta = self.agent.update_funcs["update"](self.network, self.replay_buffer, self.agent.config, self.env)
+        losses = [losses]
         for loss, optim in zip(losses, self.optimizers.values()):
             # TODO: This assumes the losses are returned in the same order as the optimizers are defined, this shoudn't matter
             loss.backward()
@@ -100,7 +101,7 @@ class Runner:
                     - self.agent.config["exploration"]["epsilon_end"]) * math.exp(-1. * episode / self.agent.config["exploration"]["epsilon_decay"])
             if random.random() > epsilon:
                 action = self.network("DQN", state)
-                action = int(action.argmax(0).numpy())
+                action = action.argmax(0).item()
             else:
                 action = self.env.env.action_space.sample()
 
@@ -117,12 +118,13 @@ class Runner:
 
             if done:
                 break
+        
         episode_reward = sum(rewards)
         return episode_reward
 
     def train(self):
         scores = []
-        for episode in range(self.agent.config["training"]["episodes"]):
+        for episode in range(1, self.agent.config["training"]["episodes"]):
             state = self.env.init()
             episode_reward = 0
 

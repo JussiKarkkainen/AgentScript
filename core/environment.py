@@ -5,6 +5,9 @@ from tinygrad.tensor import Tensor
 
 implemented_envs = {"gym": ["CarRacing-v2", "CartPole-v1", "Pendulum-v1", "LunarLander-v2"]}
 
+def preprocess(obs):
+    raise NotImplementedError
+
 class Environment:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
