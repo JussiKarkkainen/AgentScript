@@ -21,7 +21,7 @@ pip3 install .
 Here is an example file that implements a DQN agent. Logging is done with [Weights & Biases](https://wandb.ai/site)
 More examples are in the ```examples/``` directory.
 
-To train the agent, run ```python3 agentscript.py examples/dqn.as```
+To train the agent, run ```python3 agentscript.py examples/dqn.agsc```
 
 ```python
 #DEFINE CONFIG
