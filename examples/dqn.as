@@ -22,7 +22,7 @@ Agent:
     epsilon_decay: 200
   discount_factor: 0.99
   training:
-    episodes: 200
+    episodes: 230
     max_time_steps: 10000
     batch_size: 32
   optimizer:

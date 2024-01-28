@@ -91,7 +91,7 @@ An AgentScript file consists of YAML, NN and PYTHON sections. They need to be sp
 used to configure three objects: Environment, Replay Buffer and Agent. These are then implemented by the framework.
 
 The ```NN``` section is used to define the neural networks used by the algorithm. They should be defined using [tinygrad](https://github.com/tinygrad/tinygrad) 
-syntax. a ```config``` dictionary onject is passed to the ```___init___()``` method of the neural network definition. This contains parameters defined in the
+syntax. A ```config``` dictionary object is passed to the ```___init___()``` method of the neural network definition. This contains parameters defined in the
 ```networks``` section of the ```Agent``` config.
 
 The ```PYTHON``` section is used to define the update step of the algorithm. For DQN for example, it takes a batch of inputs and outputs the loss. The rest is 
