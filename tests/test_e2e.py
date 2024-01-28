@@ -18,14 +18,14 @@ def run_test(test_file: str):
         raise Exception
 
 def test_dqn():
-    run_test("tests/test_files/test_dqn.as")
+    run_test("tests/test_files/test_dqn.agsc")
 
 def test_reinforce():
-    run_test("tests/test_files/test_reinforce.as")
+    run_test("tests/test_files/test_reinforce.agsc")
 
 def test_actorcritic():
-    run_test("tests/test_files/test_actor-critic.as")
+    run_test("tests/test_files/test_actor-critic.agsc")
     
 def test_ppo():
-    run_test("tests/test_files/test_ppo.as")
+    run_test("tests/test_files/test_ppo.agsc")
 
