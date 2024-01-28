@@ -1,116 +1,99 @@
 # AgentScript
 ![Tests](https://github.com/JussiKarkkainen/AgentLib/actions/workflows/python-app.yml/badge.svg)
 
+### Note
+WIP - Currently only supporting: DQN, REINFORCE, PPO and Actor-Critic. Other algorithms require 
+modifications. The plan is to make the framework algorithm-agnostic in the future.
 
 ## Introduction
-AgentScript is a config language used to define Deep Reinforcement Learning (DRL) algorithms and agents.
-It allows the user to define agents that work in a variety of environments that follow the usual 
-RL loop of ```state -> action -> reward -> new state```. It uses [tinygrad](https://github.com/tinygrad/tinygrad)
-for the Neural Network Implementations.
+AgentScript is a Reinforcement Learning framework that simplifies the implementation of many algorithms.
+It allows the user to define hyperparameters in YAML-syntax and the neural network definitions and 
+update functions in Python. [Tinygrad](https://github.com/tinygrad/tinygrad) is used as the DL framework.
 
 ## Installation
-Clone the repo and install
 ```
 git clone git@github.com:JussiKarkkainen/AgentScript.git
 cd AgentScript
 pip3 install .
 ```
 
-## Details
-More specifically, this library implementes the following loop:
-
-```
-state = environment.reset()
-while not converged:
-    action = agent.forward(state)
-    new_state, reward, done = environment.step(action)
-    replay_buffer.update(state, action, reward, new_state, done)
-    agent.update(replay_buffer)
-```
-Most RL agents can be explained using the above loop. Therefore writing it everytime
-you want to implement an RL agent can get tedious. AgentScript simplifies this in two ways:
-1. It provides implementations of Replay Buffers and Environments that the user can take advantage
-   of and configure to their needs using a YAML-configuration.
-2. It allows the user to define the Neural Network part of the RL agent (```agent.forward()```)
-   as well as the ```update()``` function that defines how the agent learns. The rest is handled by 
-   the library itself.
-
-### Syntax
-An AgentScript file consists of YAML and python sections. They need to be specified with a
-```#DEFINE CONFIG``` or a ```#DEFINE PYTHON``` at the beginning of the definition. YAML is
-used to configure three objects: Environment, Replay Buffer and Agent. Python is used to
-define the Neural Networks and the Agent's update functions. The Neural Networks are defined
-using [tinygrad](https://github.com/tinygrad/tinygrad).
-
 ## Example
-Here is an example file that implements a DQN agent. More examples are in the ```examples/```
-directory.
+Here is an example file that implements a DQN agent. Logging is done with [Weights & Biases](https://wandb.ai/site)
+More examples are in the ```examples/``` directory.
 
-To train the agent, run ```SCRIPT=1 python3 agentlib.py examples/dqn.as```
+To train the agent, run ```python3 agentlib.py examples/dqn.as```
 
 ```python
 #DEFINE CONFIG
 Environment:
   name: CartPole-v1
-  horizon: 1000
   preprocess: False
 
 #DEFINE CONFIG
 ReplayBuffer:
   capacity: 10000
-  batch_size: 64
+  batch_size: 32
+  update_freq: Batch
+  type: DQN
 
 #DEFINE CONFIG
 Agent:
   type: DQN
-  network:
-    input_shape: 4  
-    hidden_layers: [32, 64] 
-    output_shape: 2  
-    activation: relu
+  update_freq: Batch
+  networks:
+    DQN:
   exploration:
-    type: EpsGreedy
-    epsilon: 1.0
-    decay_rate: 0.99
-    min_epsilon: 0.1
-  memory: replay_buffer 
-  tnameget_update_frequency: 100
+    epsilon_start: 1.0
+    epsilon_end: 0.01
+    epsilon_decay: 200
   discount_factor: 0.99
-  loss_function: huber_loss
+  training:
+    episodes: 200
+    max_time_steps: 10000
+    batch_size: 32
   optimizer:
-    type: Adam
-    learning_rate: 0.001
+    DQN:
+      type: Adam
+      learning_rate: 0.001
   meta:
-    train: false
-    weight_path: None
+    train: True
+    weight_path: "weights/dqn"
+  logs: 
+    logging: True
+    config: [exploration, discount_factor, training, optimizer]
 
-#DEFINE PYTHON
-class DQNNetwork(nn.Module):
+#DEFINE NN
+class DQN:
     def __init__(self, config):
-        super(DQNNetwork, self).__init__()
-        self.layers = nn.ModuleList()
-        input_size = config['network']['input_shape']
-        for hidden_size in config['network']['hidden_layers']:
-            self.layers.append(nn.Linear(input_size, hidden_size))
-            input_size = hidden_size
-        self.output = nn.Linear(input_size, config['network']['output_shape'])
+        self.fc1 = nn.Linear(4, 128)
+        self.fc2 = nn.Linear(128, 512)
+        self.fc3 = nn.Linear(512, 2)
 
-    def forward(self, x):
-        for layer in self.layers:
-            x = torch.relu(layer(x))
-        return self.output(x)
+    def __call__(self, x):
+        x = self.fc1(x).relu()
+        x = self.fc2(x).relu()
+        return self.fc3(x)
 
 #DEFINE PYTHON
-def dqn_update(agent, batch):
+def update(networks, replay_buffer, config, env=None):
+    batch = replay_buffer.sample(config["training"]["batch_size"])
     states, actions, rewards, next_states, dones = batch['states'], batch['actions'], batch['rewards'], batch['next_states'], batch['dones']
-    curr_Q = agent.q_network(states).gather(1, actions.unsqueeze(-1)).squeeze(-1)
-    next_Q = agent.target_network(next_states).max(1)[0]
-    expected_Q = rewards + (agent.gamma * next_Q * (1 - dones))
-    loss = F.mse_loss(curr_Q, expected_Q.detach())
-    return loss
+    curr_Q = networks("DQN", states)
+    curr_Q = curr_Q.gather(actions.unsqueeze(-1), 1).squeeze(-1)
+    next_Q = networks("DQN", next_states).max(1)
+    expected_Q = rewards + config["discount_factor"] * next_Q * (1 - dones)
+    loss = Tensor.mean((curr_Q - expected_Q.detach()) ** 2)
+    return loss, None
 ```
+## Syntax
+An AgentScript file consists of YAML, NN and PYTHON sections. They need to be specified with a
+```#DEFINE CONFIG```, ```#DEFINE NN``` or a ```#DEFINE PYTHON``` line at the beginning of the definition. YAML is
+used to configure three objects: Environment, Replay Buffer and Agent. These are then implemented by the framework.
 
-## TODO
-- [ ] Make it fast
-- [ ] Add logging with W&B 
-- [ ] More implementations
+The ```NN``` section is used to define the neural networks used by the algorithm. They should be defined using [tinygrad](https://github.com/tinygrad/tinygrad) 
+syntax. a ```config``` dictionary onject is passed to the ````___init___()``` method of the neural network definition. This contains parameters defined in the
+```networks``` section of the ```Agent``` config.
+
+The ```PYTHON``` section is used to define the update step of the algorithm. For DQN for example, it takes a batch of inputs and outputs the loss. The rest is 
+handled by the framework. 
+
