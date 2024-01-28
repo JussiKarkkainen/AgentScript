@@ -1,7 +1,6 @@
 #DEFINE CONFIG
 Environment:
   name: CartPole-v1
-  horizon: 1000
   preprocess: False
 
 #DEFINE CONFIG

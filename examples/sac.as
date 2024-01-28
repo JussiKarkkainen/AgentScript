@@ -1,7 +1,6 @@
 #DEFINE CONFIG
 Environment:
   name: Pendulum-v1
-  horizon: 1000
   preprocess: False
 
 #DEFINE CONFIG
@@ -18,21 +17,27 @@ Agent:
   gamma: 0.99
   update_freq: Batch
   networks:
+      state_dim: 4
+      hidden_dim: 256
+      action_dim: 2
     Actor:
+      type: Actor
     critic1:
+      type: Actor
     critic2:
+      type: Actor
     critic1_target:
+      type: Actor
     critic2_target:
+      type: Actor
   optimizer:
+    learning_rate: 0.001
     Actor: 
       type: Adam
-      learning_rate: 0.001
     critic1:
       type: Adam
-      learning_rate: 0.001
     critic2:
       type: Adam
-      learning_rate: 0.001
   training:
     episodes: 1000
     max_time_steps: 10000

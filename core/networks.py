@@ -4,6 +4,7 @@ import tinygrad.nn as nn
 class NeuralNetwork:
     def __init__(self, python_defs, config):
         self.networks = {}
+        
         for i, python_def in enumerate(python_defs):
             name = list(config["networks"].keys())[i]
             local_scope = {}
