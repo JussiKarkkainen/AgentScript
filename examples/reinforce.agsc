@@ -1,3 +1,5 @@
+# Note - Breaks with metal backend, run with CPU=1 instead 
+
 #DEFINE CONFIG
 Environment:
   name: CartPole-v1

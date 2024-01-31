@@ -32,13 +32,14 @@ Agent:
       type: Adam
       learning_rate: 1e-2
   training:
-    episodes: 1000
+    episodes: 200
     batch_size: 1
   meta:
     train: true
     weight_path: None
   logs:
-    logging: False
+    logging: True
+    config: [training, discount_factor, epsilon, gamma]
 
 #DEFINE NN
 class Policy:
