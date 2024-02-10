@@ -1,0 +1,61 @@
+#DEFINE CONFIG
+Environment:
+  name: CartPole-v1
+  preprocess: False
+
+#DEFINE CONFIG
+ReplayBuffer:
+  capacity: 10000
+  batch_size: 32
+  update_freq: Batch
+  type: DQN
+
+#DEFINE CONFIG
+Agent:
+  type: DQN
+  update_freq: Batch
+  networks:
+    Representaton:
+    Prediction:
+    Dynamics:
+  training:
+    episodes: 1000
+    max_time_steps: 10000
+    batch_size: 32
+  optimizer:
+    Representation:
+      type: Adam
+      learning_rate: 0.001
+    Prediction:
+      type: Adam
+      learning_rate: 0.001
+    Dynamics:
+      type: Adam
+      learning_rate: 0.001
+  meta:
+    train: True
+    weight_path: "weights/MuZero"
+  logs: 
+    logging: False
+    config: []
+
+
+#DEFINE NN
+class Representation:
+    pass
+
+#DEFINE NN
+class Prediction:
+    pass
+
+#DEFINE NN
+class Dynamics:
+    pass
+
+
+#DEFINE PYTHON
+def mcts():
+    pass
+
+
+
