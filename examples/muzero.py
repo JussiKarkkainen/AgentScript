@@ -126,7 +126,7 @@ def add_exploration_noise(node):
     for action, n in zip(range(actions), noise):
         node.children[action].policy_prior = node.children[action].policy_prior * (1 - frac) + n * frac
 
-def ucb_score_function():
+def ucb_score_function(parent, child, min_max_stats):
     # TODO: Explain the UCB function
     raise Exception
     pb_c = math.log((parent.visit_count + config.pb_c_base + 1) / config.pb_c_base) + config.pb_c_init
@@ -164,14 +164,14 @@ def mcts(root, network):
 
 def self_play(replay_buffer, storage):
     environment = Environment("CartPole-v1")
-    root_state, info = environment.reset()         
+    root_state = environment.reset()         
     muzero = storage.get()
     states, actions, rewards = [], [], []
     done = False
     while not done:
         policy, value, hidden_state = muzero.initial_inference(root_state)
         root = Node(0)
-        expand_node(root, (hidden_state, 0, policy, value), environment.action_space)
+        expand_node(root, (hidden_state, 0, policy, value), environment.action_space())
         add_exploration_noise(root)
         mcts(root, muzero)
         raise Exception

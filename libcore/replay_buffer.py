@@ -5,7 +5,7 @@ from typing import List, Tuple
 # Define a simple structure for storing experiences
 Experience = namedtuple('Experience', ['state', 'action', 'next_state', 'reward', 'done'])
 
-class BaseReplayBuffer:
+class ReplayBuffer:
     def __init__(self, capacity: int):
         self.capacity = capacity
         self.buffer = []  

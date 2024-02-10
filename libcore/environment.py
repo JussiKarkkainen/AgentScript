@@ -18,3 +18,9 @@ class Environment:
 
     def is_terminal(self):
         return self.done
+
+    def action_space(self):
+        return self.env.action_space
+
+    def obs_space(self):
+        return self.env.observation_space
