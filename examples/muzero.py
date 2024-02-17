@@ -29,6 +29,7 @@ class Node:
         self.reward = 0
         self.children = {}
         self.policy_prior = policy_prior
+        self.visit_count = 0
 
     def is_expanded(self):
         return len(list(self.children.keys())) > 0
@@ -129,7 +130,7 @@ def add_exploration_noise(node):
 def ucb_score_function(parent, child, min_max_stats):
     # TODO: Explain the UCB function
     raise Exception
-    pb_c = math.log((parent.visit_count + config.pb_c_base + 1) / config.pb_c_base) + config.pb_c_init
+    pb_c = math.log((parent.visit_count + muzero_config["pb_c_base"] + 1) / muzero_config["pb_c_base"]) + muzero_config["pb_c_init"]
     pb_c *= math.sqrt(parent.visit_count) / (child.visit_count + 1)
     prior_score = pb_c * child.prior
     if child.visit_count > 0:
@@ -143,8 +144,12 @@ def select_child(node, min_max_stats):
     return action, child     
 
 def backpropagate(search_path, value, min_max_stats):
-    pass
-
+    for node in search_path:
+        node.value_sum += value
+        node.visit_count += 1
+        min_max_stats.update(node.value())
+        value = node.reward + discount * value
+        
 def mcts(root, network):
     min_max_stats = MinMaxStats(muzero_config["reward_max"], muzero_config["reward_min"])
     for simulation in range(muzero_config["num_simulations"]):
@@ -159,14 +164,19 @@ def mcts(root, network):
         parent = search_path[-2]
         hidden_state, reward, policy, value = network.recurrent_inference(parent.hidden_state, history.last_action)
         expand_node(node, (hidden_state, reward, policy, value), history)
-        raise Exception
         backpropagate(search_path, value, min_max_stats)
+
+def select_action(history_len, root, network):
+    visit_counts = [(child.visit_count, action) for action, child in node.children.items()]
+    temp = muzero_config.visit_softmax_temperature_fn(num_moves=num_moves, training_steps=network.training_steps())
+    _, action = softmax_sample(visit_counts, t)
+    return action
 
 def self_play(replay_buffer, storage):
     environment = Environment("CartPole-v1")
     root_state = environment.reset()         
     muzero = storage.get()
-    states, actions, rewards = [], [], []
+    actions, rewards, child_visits, root_values = [], [], [], [], []
     done = False
     while not done:
         policy, value, hidden_state = muzero.initial_inference(root_state)
@@ -174,9 +184,15 @@ def self_play(replay_buffer, storage):
         expand_node(root, (hidden_state, 0, policy, value), environment.action_space())
         add_exploration_noise(root)
         mcts(root, muzero)
-        raise Exception
+        action = select_action(game_history, root, muzero)
+        next_state, reward, terminated, truncated, info = environment.step(action.item())
+        done = terminated or truncated
+        actions.append(actions)
+        rewards.append(reward)
+        root_values.append(root.value())
+        self.child_visits.append([root.children[a].visit_count / sum(child.visit_count for child in root.children.values()) if a in root.children else 0 for a in action_space])
 
-    episode = Episode(states=states, actions=actions, rewards=rewards)
+    episode = Episode(actions=actions, rewards=rewards, child_visits=child_visits, root_values=root_values)
     replay_buffer.push(episode)
 
 def train(muzero, replay_buffer, storage):
@@ -195,7 +211,7 @@ training_config = {"batch_size": 64,
                    "num_train_steps": 1000}
 
 
-Episode = collections.namedtuple("Episode", "states actions rewards")
+Episode = collections.namedtuple("Episode", "states actions rewards child_visits root_values")
 
 if __name__ == "__main__":
     weight_manager = WeightManager("weights/MuZero")
