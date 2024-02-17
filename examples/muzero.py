@@ -196,10 +196,17 @@ def self_play(replay_buffer, storage):
     replay_buffer.push(episode)
 
 def train(muzero, replay_buffer, storage):
+    network = MuZero()
+    learning_rate = training_config["lr"]
+    optimizer = torch.optim.Adam(network.parameters(), learning_rate)
     for step in range(training_config["num_train_steps"]):
-        batch = replay_buffer.sample(training_config["batch_size"])
+        if step % training_config["checkpoint_checks"] == 0:
+            storage.save_network(network)
+        batch = replay_buffer.sample(training_config["num_unroll_steps"], training_config["td_steps"])
         print(batch)
         raise Exception
+        update_weights(network, optimizer, batch)
+    storage.save_network(network)
 
 muzero_config = {"root_dirichlet_alpha": 0.3, # This is used to add exploration noise to the root node.
                  "root_exploration_fraction": 0.25, # TODO: Explain
