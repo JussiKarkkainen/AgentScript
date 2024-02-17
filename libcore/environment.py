@@ -14,7 +14,7 @@ class Environment:
     def step(self, action: Any):
         next_state, reward, terminated, truncated, info = self.env.step(action)
         self.done = terminated or truncated
-        return next_state
+        return next_state, reward, self.done
 
     def is_terminal(self):
         return self.done

@@ -5,6 +5,7 @@ from torch.distributions import Categorical
 import collections
 import random
 import numpy as np
+import math
 
 from libcore.environment import Environment
 from libcore.logging import Logger
@@ -30,9 +31,13 @@ class Node:
         self.children = {}
         self.policy_prior = policy_prior
         self.visit_count = 0
+        self.value_sum = 0
 
     def is_expanded(self):
         return len(list(self.children.keys())) > 0
+
+    def value(self):
+        return self.value_sum / self.visit_count if self.visit_count != 0 else 0
 
 class MinMaxStats:
     def __init__(self, maximum, minimum):
@@ -94,8 +99,12 @@ class MuZeroNet(nn.Module):
         return hidden_state
 
     def dynamics(self, s, a):
-        combined_input = torch.stack(s, a)
-        return self.dynamics_net(combined_input)
+        a = a.unsqueeze(dim=0)
+        combined_input = torch.cat((s, a))
+        out = self.dynamics_net(combined_input)
+        hidden = out[:-1]
+        reward = out[-1]
+        return hidden, reward
 
     def prediction(self, s):
         policy, value = self.prediction_net(s)
@@ -109,9 +118,10 @@ class MuZeroNet(nn.Module):
 
     def recurrent_inference(self, s, a):
         # Moving between states in MCTS: hidden state, action -> next hidden state, reward -> policy, value
-        hidden_state, reward = self.dynamics(s, s)
+        a = torch.tensor(a) if not isinstance(a, torch.Tensor) else a
+        hidden_state, reward = self.dynamics(s, a)
         policy, value = self.prediction(hidden_state)
-        return (hidden_state, reward), (policy, value)
+        return hidden_state, reward, policy, value
 
 def expand_node(node, network_output, actions):
     hidden_state, reward, policy, value = network_output
@@ -129,12 +139,11 @@ def add_exploration_noise(node):
 
 def ucb_score_function(parent, child, min_max_stats):
     # TODO: Explain the UCB function
-    raise Exception
     pb_c = math.log((parent.visit_count + muzero_config["pb_c_base"] + 1) / muzero_config["pb_c_base"]) + muzero_config["pb_c_init"]
     pb_c *= math.sqrt(parent.visit_count) / (child.visit_count + 1)
-    prior_score = pb_c * child.prior
+    prior_score = pb_c * child.policy_prior
     if child.visit_count > 0:
-        value_score = min_max_stats.normalize(child.reward + config.discount * child.value())
+        value_score = min_max_stats.normalize(child.reward + muzero_config["discount"] * child.value())
     else:
         value_score = 0
     return prior_score + value_score
@@ -148,9 +157,9 @@ def backpropagate(search_path, value, min_max_stats):
         node.value_sum += value
         node.visit_count += 1
         min_max_stats.update(node.value())
-        value = node.reward + discount * value
+        value = node.reward + muzero_config["discount"] * value
         
-def mcts(root, network):
+def mcts(root, network, env):
     min_max_stats = MinMaxStats(muzero_config["reward_max"], muzero_config["reward_min"])
     for simulation in range(muzero_config["num_simulations"]):
         node = root
@@ -162,45 +171,58 @@ def mcts(root, network):
             search_path.append(node)
         
         parent = search_path[-2]
-        hidden_state, reward, policy, value = network.recurrent_inference(parent.hidden_state, history.last_action)
-        expand_node(node, (hidden_state, reward, policy, value), history)
+        hidden_state, reward, policy, value = network.recurrent_inference(parent.hidden_state, history[-1])
+        expand_node(node, (hidden_state, reward, policy, value), env.action_space())
         backpropagate(search_path, value, min_max_stats)
 
-def select_action(history_len, root, network):
+def visit_softmax_temp_fn(num_moves):
+    return 1.0 if num_moves < 30 else 0.0
+
+def softmax_sample(visit_counts, t):
+    probs = [a[0] / sum([a[0] for a in visit_counts]) for a in visit_counts]
+    a = torch.multinomial(torch.tensor(probs), num_samples=1)
+    return a
+
+def select_action(history_len, node, network):
     visit_counts = [(child.visit_count, action) for action, child in node.children.items()]
-    temp = muzero_config.visit_softmax_temperature_fn(num_moves=num_moves, training_steps=network.training_steps())
-    _, action = softmax_sample(visit_counts, t)
+    temp = visit_softmax_temp_fn(num_moves=history_len)
+    action = softmax_sample(visit_counts, temp)
     return action
 
 def self_play(replay_buffer, storage):
     environment = Environment("CartPole-v1")
     root_state = environment.reset()         
     muzero = storage.get()
-    actions, rewards, child_visits, root_values = [], [], [], [], []
+    actions, rewards, child_visits, root_values = [], [], [], []
     done = False
     while not done:
         policy, value, hidden_state = muzero.initial_inference(root_state)
         root = Node(0)
         expand_node(root, (hidden_state, 0, policy, value), environment.action_space())
         add_exploration_noise(root)
-        mcts(root, muzero)
-        action = select_action(game_history, root, muzero)
-        next_state, reward, terminated, truncated, info = environment.step(action.item())
-        done = terminated or truncated
+        mcts(root, muzero, environment)
+        action = select_action(len(actions), root, muzero)
+        next_state, reward, done = environment.step(action.item())
         actions.append(actions)
         rewards.append(reward)
         root_values.append(root.value())
-        self.child_visits.append([root.children[a].visit_count / sum(child.visit_count for child in root.children.values()) if a in root.children else 0 for a in action_space])
+        child_visits.append([root.children[a].visit_count / sum(child.visit_count for child in root.children.values()) if a in root.children else 0 for a in range(environment.action_space().n)])
 
     episode = Episode(actions=actions, rewards=rewards, child_visits=child_visits, root_values=root_values)
     replay_buffer.push(episode)
+    raise Exception
+
+
+def update_weights(network, batch):
+    pass
+
 
 def train(muzero, replay_buffer, storage):
     network = MuZero()
     learning_rate = training_config["lr"]
     optimizer = torch.optim.Adam(network.parameters(), learning_rate)
     for step in range(training_config["num_train_steps"]):
-        if step % training_config["checkpoint_checks"] == 0:
+        if step % training_config["checkpoint_steps"] == 0:
             storage.save_network(network)
         batch = replay_buffer.sample(training_config["num_unroll_steps"], training_config["td_steps"])
         print(batch)
@@ -212,13 +234,18 @@ muzero_config = {"root_dirichlet_alpha": 0.3, # This is used to add exploration 
                  "root_exploration_fraction": 0.25, # TODO: Explain
                  "num_simulations": 10, # Number of MCTS simulations to do per move 
                  "reward_max": 500,     # Used in MinMaxStats to normalize rewards
-                 "reward_min": 0}
+                 "reward_min": 0,
+                 "pb_c_base": 19652,
+                 "pb_c_init": 1.25,
+                 "discount": 1.0}
 
 training_config = {"batch_size": 64,
-                   "num_train_steps": 1000}
+                   "num_train_steps": 1000,
+                   "checkpoint_steps": 20,
+                   "num_unroll_steps": 5,
+                   "td_steps": 10}          # TODO: Find a good value for this 
 
-
-Episode = collections.namedtuple("Episode", "states actions rewards child_visits root_values")
+Episode = collections.namedtuple("Episode", "actions rewards child_visits root_values")
 
 if __name__ == "__main__":
     weight_manager = WeightManager("weights/MuZero")

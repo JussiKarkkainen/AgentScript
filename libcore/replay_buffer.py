@@ -2,7 +2,6 @@ import random
 from collections import namedtuple
 from typing import List, Tuple
 
-# Define a simple structure for storing experiences
 Experience = namedtuple('Experience', ['state', 'action', 'next_state', 'reward', 'done'])
 
 class ReplayBuffer:
@@ -11,10 +10,15 @@ class ReplayBuffer:
         self.buffer = []  
         self.position = 0
 
-    def push(self, state, action, next_state, reward, done):
+    def push(self, *args):
         if len(self.buffer) < self.capacity:
             self.buffer.append(None)
-        self.buffer[self.position] = Experience(state, action, next_state, reward, done)
+        if len(args) == 1:
+            # User passes a custom Experience namedtuple
+            experience = args[0]
+        elif len(args) == 5:
+            experience = Experience(*args)
+        self.buffer[self.position] = experience
         self.position = (self.position + 1) % self.capacity 
 
     def sample(self, batch_size: int) -> List[Experience]:
