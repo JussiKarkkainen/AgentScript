@@ -21,8 +21,16 @@ class ReplayBuffer:
         self.buffer[self.position] = experience
         self.position = (self.position + 1) % self.capacity 
 
-    def sample(self, batch_size: int) -> List[Experience]:
+    def sample(self, batch_size: int, num_unroll_steps: int, td_steps: int) -> List[Experience]:
+        episodes = random.sample(self.buffer, batch_size)
+        positions = [(episode, random.randint(0, max(0, (len(episode.actions) - num_unroll_steps - 1)))) for episode in episodes]
+        batch = [(episode.obs[i], eoisode.actions[i:i+num_unroll_steps], self.make_target(i, num_unroll_steps, td_steps, episode) for episode, i in positions]
+        
+        raise Exception
         return random.sample(self.buffer, batch_size)
+    
+    def make_target(self, i, num_unroll_steps, td_steps, episode):
+        return targets
 
     def __len__(self):
         return len(self.buffer)

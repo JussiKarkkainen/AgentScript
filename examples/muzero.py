@@ -138,7 +138,6 @@ def add_exploration_noise(node):
         node.children[action].policy_prior = node.children[action].policy_prior * (1 - frac) + n * frac
 
 def ucb_score_function(parent, child, min_max_stats):
-    # TODO: Explain the UCB function
     pb_c = math.log((parent.visit_count + muzero_config["pb_c_base"] + 1) / muzero_config["pb_c_base"]) + muzero_config["pb_c_init"]
     pb_c *= math.sqrt(parent.visit_count) / (child.visit_count + 1)
     prior_score = pb_c * child.policy_prior
@@ -191,40 +190,42 @@ def select_action(history_len, node, network):
 
 def self_play(replay_buffer, storage):
     environment = Environment("CartPole-v1")
-    root_state = environment.reset()         
+    state = environment.reset()         
     muzero = storage.get()
-    actions, rewards, child_visits, root_values = [], [], [], []
+    obs, actions, rewards, child_visits, root_values = [], [], [], [], []
     done = False
     while not done:
-        policy, value, hidden_state = muzero.initial_inference(root_state)
+        obs.append(state)
+        policy, value, hidden_state = muzero.initial_inference(state)
         root = Node(0)
         expand_node(root, (hidden_state, 0, policy, value), environment.action_space())
         add_exploration_noise(root)
         mcts(root, muzero, environment)
         action = select_action(len(actions), root, muzero)
         next_state, reward, done = environment.step(action.item())
+        state = next_state
         actions.append(actions)
         rewards.append(reward)
         root_values.append(root.value())
         child_visits.append([root.children[a].visit_count / sum(child.visit_count for child in root.children.values()) if a in root.children else 0 for a in range(environment.action_space().n)])
 
-    episode = Episode(actions=actions, rewards=rewards, child_visits=child_visits, root_values=root_values)
+    episode = Episode(obs=obs, actions=actions, rewards=rewards, child_visits=child_visits, root_values=root_values)
     replay_buffer.push(episode)
-    raise Exception
-
 
 def update_weights(network, batch):
     pass
 
-
-def train(muzero, replay_buffer, storage):
-    network = MuZero()
+def train(replay_buffer, storage):
+    network = MuZeroNet()
     learning_rate = training_config["lr"]
     optimizer = torch.optim.Adam(network.parameters(), learning_rate)
     for step in range(training_config["num_train_steps"]):
         if step % training_config["checkpoint_steps"] == 0:
-            storage.save_network(network)
-        batch = replay_buffer.sample(training_config["num_unroll_steps"], training_config["td_steps"])
+            storage.push(step, network)
+        if replay_buffer.is_ready(training_config["batch_size"]):
+            batch = replay_buffer.sample(training_config["batch_size"], training_config["num_unroll_steps"], training_config["td_steps"])
+        else:
+            continue
         print(batch)
         raise Exception
         update_weights(network, optimizer, batch)
@@ -237,15 +238,17 @@ muzero_config = {"root_dirichlet_alpha": 0.3, # This is used to add exploration 
                  "reward_min": 0,
                  "pb_c_base": 19652,
                  "pb_c_init": 1.25,
-                 "discount": 1.0}
+                 "discount": 1.0,
+                 "num_selfplay_proc": 64}
 
 training_config = {"batch_size": 64,
                    "num_train_steps": 1000,
                    "checkpoint_steps": 20,
                    "num_unroll_steps": 5,
-                   "td_steps": 10}          # TODO: Find a good value for this 
+                   "td_steps": 10,          # TODO: Find a good value for this 
+                   "lr": 3e-4}          
 
-Episode = collections.namedtuple("Episode", "actions rewards child_visits root_values")
+Episode = collections.namedtuple("Episode", "obs actions rewards child_visits root_values")
 
 if __name__ == "__main__":
     weight_manager = WeightManager("weights/MuZero")
@@ -254,7 +257,7 @@ if __name__ == "__main__":
     storage = SharedStorage()
     # NOTE: This sort of aligns with the pseudocode: two jobs, selfplay and train
     # In the official code, there are multiple selfplay jobs running at the same time; selfplay and train might do that too.
-    
-    self_play(replay_buffer, storage)
+    for _ in range(muzero_config["num_selfplay_proc"]): 
+        self_play(replay_buffer, storage)
     train(replay_buffer, storage)
 
